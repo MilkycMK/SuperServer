@@ -11,13 +11,14 @@ public class User {
     private String name;
     private String password;
 
-    public User() {
+    protected User() {
 
     }
 
     public User(String name, String password) {
         this.setName(name);
         this.setPassword(password);
+        UserService.saveUser(this);
     }
 
     public void setName(String name) {
