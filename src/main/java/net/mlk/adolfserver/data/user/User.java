@@ -1,0 +1,38 @@
+package net.mlk.adolfserver.data.user;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    private String name;
+    private String password;
+
+    public User() {
+
+    }
+
+    public User(String name, String password) {
+        this.setName(name);
+        this.setPassword(password);
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+}
