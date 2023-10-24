@@ -8,20 +8,31 @@ import jakarta.persistence.Table;
 @Table(name = "sessions")
 public class Session {
     @Id
+    private int id;
     private String name;
     private String token;
+    private String mask;
 
     protected Session() {
 
     }
 
-    public Session(String userName, String token) {
-        this.setUserName(userName);
+    public Session(String userName, String token, String mask) {
+        this.setName(userName);
         this.setToken(token);
+        this.setMask(mask);
         SessionService.saveSession(this);
     }
 
-    public void setUserName(String userName) {
+    public void setMask(String mask) {
+        this.mask = mask;
+    }
+
+    public String getMask() {
+        return this.mask;
+    }
+
+    public void setName(String userName) {
         this.name = userName;
     }
 
@@ -29,7 +40,7 @@ public class Session {
         this.token = token;
     }
 
-    public String getUserName() {
+    public String getName() {
         return this.name;
     }
 
