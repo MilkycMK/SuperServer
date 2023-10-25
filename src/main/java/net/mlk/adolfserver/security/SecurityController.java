@@ -63,8 +63,7 @@ public class SecurityController {
     @RequestMapping(path = {"/logout", "/logout/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> logout(HttpServletRequest request) {
         SessionRepository sessionRepository = SessionService.getSessionRepository();
-        String authorization = request.getHeader("Authorization");
-        Session session = sessionRepository.findByToken(authorization);
+        Session session = (Session) request.getAttribute("session");
 
         sessionRepository.delete(session);
         return new ResponseEntity<>(HttpStatus.OK);
