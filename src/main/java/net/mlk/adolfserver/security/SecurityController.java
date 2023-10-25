@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.File;
 import java.util.regex.Pattern;
 
 @Controller
@@ -39,6 +40,10 @@ public class SecurityController {
 
         User user = new User(name, SecurityUtils.sha512Encrypt(password));
         Token token = new Token(name, true, TOKEN_DURATION);
+        File file = new File("userFiles/" + name);
+        if (!file.exists()) {
+            file.mkdir();
+        }
         return new ResponseEntity<>(new UserEntity(name, token.getToken()).toString(), HttpStatus.OK);
     }
 

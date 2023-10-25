@@ -5,6 +5,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "todo")
@@ -30,11 +31,11 @@ public class TodoElement {
         this(name, header, description, null, creation_time);
     }
 
-    public TodoElement(String name, String header, String description, String files, LocalDateTime creation_time) {
+    public TodoElement(String name, String header, String description, List<String> files, LocalDateTime creation_time) {
         this(name, header, description, files, creation_time, null);
     }
 
-    public TodoElement(String name, String header, String description, String files, LocalDateTime creation_time, LocalDateTime task_time) {
+    public TodoElement(String name, String header, String description, List<String> files, LocalDateTime creation_time, LocalDateTime task_time) {
         this.setName(name);
         this.setHeader(header);
         this.setDescription(description);
@@ -68,8 +69,8 @@ public class TodoElement {
         this.description = description;
     }
 
-    public void setFiles(String files) {
-        this.files = files;
+    public void setFiles(List<String> files) {
+        this.files = files.toString();
     }
 
     public String getFiles() {
