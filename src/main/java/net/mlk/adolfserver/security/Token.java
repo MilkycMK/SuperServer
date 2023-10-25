@@ -28,6 +28,7 @@ public class Token {
     }
 
     public Token(String name, boolean expiring, long seconds) {
+        this.name = name;
         this.mask = this.generateMask();
         this.expiring = expiring;
         if (expiring) {
@@ -35,7 +36,7 @@ public class Token {
             this.expirationTime = this.creationTime.plusSeconds(seconds);
         }
         this.token = encodeToken(name);
-        Session session = new Session(name, this.token, this.mask);
+        Session session = new Session(this);
     }
 
     private String encodeToken(String name) {
@@ -55,7 +56,7 @@ public class Token {
         return token.toString();
     }
 
-    public void decodeToken(String token) throws InvalidTokenException {
+    public void decodeToken(String token) /* throws InvalidTokenException */ {
         token = unmaskString(token);
         String[] tokenParts = token.split("@");
         this.name = tokenParts[0];
