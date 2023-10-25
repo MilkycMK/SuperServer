@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.session.Session;
 import net.mlk.adolfserver.data.todo.TodoElement;
+import net.mlk.adolfserver.errors.ResponseError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -29,10 +31,19 @@ public class TodoController {
                                              @RequestParam(value = "files", required = false) MultipartFile[] files,
                                              HttpServletRequest request,
                                              HttpServletResponse response) throws IOException {
+
         Session session = (Session) request.getAttribute("session");
+
         String name = session.getName();
+
+        if (header.isEmpty()) {
+            return new ResponseEntity<>(new ResponseError("Заголовок пустует...").toString(), HttpStatus.BAD_REQUEST);
+        } else if (!compareFormat(taskTime, AdolfServerApplication.FORMAT)) {
+            return new ResponseEntity<>(new ResponseError("Неверный формат времени.").toString(), HttpStatus.BAD_REQUEST);
+        }
+
         List<String> fileNames = new ArrayList<>();
-        System.out.println(Arrays.toString(files));
+
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileName = file.getOriginalFilename();
@@ -50,6 +61,15 @@ public class TodoController {
         }
         TodoElement element = new TodoElement(name, header, description, fileNames, created, tasked);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    public static boolean compareFormat(String inputValue, DateTimeFormatter format) {
+        try {
+            format.parse(inputValue);
+            return true;
+        } catch (DateTimeParseException dtpe) {
+            return false;
+        }
     }
 
 }
