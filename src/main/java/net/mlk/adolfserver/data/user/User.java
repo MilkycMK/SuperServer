@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 @Table(name = "users")
 public class User {
     @Id
+    private int id;
     private String name;
     private String password;
 

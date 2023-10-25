@@ -13,6 +13,7 @@ public class Token {
     private static final int MASK_LENGTH = 4;
     public static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    private String name;
     private String token;
     private final String mask;
 
@@ -22,6 +23,7 @@ public class Token {
 
     public Token(String token, String mask) throws InvalidTokenException {
         this.mask = mask;
+        this.token = token;
         this.decodeToken(token);
     }
 
@@ -32,12 +34,12 @@ public class Token {
             this.creationTime = LocalDateTime.now();
             this.expirationTime = this.creationTime.plusSeconds(seconds);
         }
-        this.token = encodeToken();
-        Session session = new Session(name, this.token);
+        this.token = encodeToken(name);
+        Session session = new Session(name, this.token, this.mask);
     }
 
-    private String encodeToken() {
-        StringBuilder token = new StringBuilder();
+    private String encodeToken(String name) {
+        StringBuilder token = new StringBuilder(name + "@");
 
         String tokenBase = this.generateString();
         if (this.expiring) {
@@ -54,13 +56,14 @@ public class Token {
     }
 
     public void decodeToken(String token) throws InvalidTokenException {
-        this.token = unmaskString(token);
-        String[] tokenParts = this.token.split("@");
-        this.expiring = Boolean.parseBoolean(tokenParts[0].split("=")[1]);
+        token = unmaskString(token);
+        String[] tokenParts = token.split("@");
+        this.name = tokenParts[0];
+        this.expiring = Boolean.parseBoolean(tokenParts[1].split("=")[1]);
 
         if (this.expiring) {
-            this.creationTime = LocalDateTime.parse(tokenParts[1], FORMAT);
-            this.expirationTime = LocalDateTime.parse(tokenParts[2], FORMAT);
+            this.creationTime = LocalDateTime.parse(tokenParts[2], FORMAT);
+            this.expirationTime = LocalDateTime.parse(tokenParts[3], FORMAT);
         }
     }
 
@@ -127,6 +130,10 @@ public class Token {
 
     public String getMask() {
         return this.mask;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     @Override
