@@ -41,6 +41,7 @@ public class TodoElement {
         this.setFiles(files);
         this.setCreationTime(creation_time);
         this.setTaskTime(task_time);
+        TodoService.saveTodo(this);
     }
 
     public void setName(String name) {
