@@ -8,5 +8,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(32) NOT NULL,
     token VARCHAR(255) NOT NULL,
-    mask VARCHAR(4) NOT NULL
+    mask VARCHAR(4) NOT NULL,
+    creation_time DATETIME NOT NULL,
+    expiration_time DATETIME NOT NULL
 )
