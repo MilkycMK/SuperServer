@@ -1,17 +1,16 @@
 package net.mlk.adolfserver.security;
 
+import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.session.Session;
 import net.mlk.adolfserver.security.exceptions.InvalidTokenException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 
 public class Token {
     private static final int MASK_LENGTH = 4;
-    public static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private String name;
     private String token;
@@ -45,8 +44,8 @@ public class Token {
         String tokenBase = this.generateString();
         if (this.expiring) {
             token.append("expiring=true@")
-                    .append(this.creationTime.format(FORMAT)).append("@")
-                    .append(this.expirationTime.format(FORMAT)).append("@");
+                    .append(this.creationTime.format(AdolfServerApplication.FORMAT)).append("@")
+                    .append(this.expirationTime.format(AdolfServerApplication.FORMAT)).append("@");
         } else {
             token.append("@expiring=false@");
         }
@@ -63,8 +62,8 @@ public class Token {
         this.expiring = Boolean.parseBoolean(tokenParts[1].split("=")[1]);
 
         if (this.expiring) {
-            this.creationTime = LocalDateTime.parse(tokenParts[2], FORMAT);
-            this.expirationTime = LocalDateTime.parse(tokenParts[3], FORMAT);
+            this.creationTime = LocalDateTime.parse(tokenParts[2], AdolfServerApplication.FORMAT);
+            this.expirationTime = LocalDateTime.parse(tokenParts[3], AdolfServerApplication.FORMAT);
         }
     }
 
