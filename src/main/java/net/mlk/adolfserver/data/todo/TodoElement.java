@@ -1,21 +1,23 @@
 package net.mlk.adolfserver.data.todo;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import net.mlk.adolfserver.data.converters.ListConverter;
+import net.mlk.jmson.JsonList;
+import net.mlk.jmson.utils.JsonConvertible;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "todo")
-public class TodoElement {
+public class TodoElement implements JsonConvertible {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
     private String header;
     private String description;
-    private String files;
+    @Convert(converter = ListConverter.class)
+    private JsonList files;
     private LocalDateTime creation_time;
     private LocalDateTime task_time;
 
@@ -31,18 +33,18 @@ public class TodoElement {
         this(name, header, description, null, creation_time);
     }
 
-    public TodoElement(String name, String header, String description, List<String> files, LocalDateTime creation_time) {
+    public TodoElement(String name, String header, String description, JsonList files, LocalDateTime creation_time) {
         this(name, header, description, files, creation_time, null);
     }
 
-    public TodoElement(String name, String header, String description, List<String> files, LocalDateTime creation_time, LocalDateTime task_time) {
+    public TodoElement(String name, String header, String description, JsonList files, LocalDateTime creation_time, LocalDateTime task_time) {
         this.setName(name);
         this.setHeader(header);
         this.setDescription(description);
         this.setFiles(files);
         this.setCreationTime(creation_time);
         this.setTaskTime(task_time);
-        TodoService.saveTodo(this);
+        TodoElement element = TodoService.saveTodo(this);
     }
 
     public void setName(String name) {
@@ -69,11 +71,11 @@ public class TodoElement {
         this.description = description;
     }
 
-    public void setFiles(List<String> files) {
-        this.files = files.toString();
+    public void setFiles(JsonList files) {
+        this.files = files;
     }
 
-    public String getFiles() {
+    public JsonList getFiles() {
         return this.files;
     }
 
@@ -91,5 +93,9 @@ public class TodoElement {
 
     public LocalDateTime getTaskTime() {
         return this.task_time;
+    }
+
+    public int getId() {
+        return this.id;
     }
 }
