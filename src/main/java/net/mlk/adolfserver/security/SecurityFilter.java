@@ -33,7 +33,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI().toLowerCase();
         return path.startsWith("/signin") || path.startsWith("/signup");
     }
