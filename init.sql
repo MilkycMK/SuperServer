@@ -12,3 +12,13 @@ CREATE TABLE IF NOT EXISTS `sessions` (
     creation_time DATETIME NOT NULL,
     expiration_time DATETIME NOT NULL
 )
+
+CREATE TABLE IF NOT EXISTS `todo` (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(32) NOT NULL,
+    header LONGTEXT NOT NULL,
+    description LONGTEXT,
+    files LONGTEXT,
+    creation_time DATETIME NOT NULL,
+    task_time DATETIME
+)
