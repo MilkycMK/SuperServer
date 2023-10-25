@@ -6,6 +6,8 @@ import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.session.Session;
 import net.mlk.adolfserver.data.todo.TodoElement;
 import net.mlk.adolfserver.errors.ResponseError;
+import net.mlk.jmson.JsonList;
+import net.mlk.jmson.utils.JsonConverter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +20,6 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 @ControllerAdvice
@@ -33,7 +33,6 @@ public class TodoController {
                                              @RequestParam(value = "files", required = false) MultipartFile[] files,
                                              HttpServletRequest request,
                                              HttpServletResponse response) throws IOException {
-
         Session session = (Session) request.getAttribute("session");
         String name = session.getName();
 
@@ -47,7 +46,7 @@ public class TodoController {
             }
         }
 
-        List<String> fileNames = new ArrayList<>();
+        JsonList fileNames = new JsonList();
 
         if (files != null) {
             for (MultipartFile file : files) {
@@ -65,7 +64,7 @@ public class TodoController {
             tasked = LocalDateTime.parse(taskTime, AdolfServerApplication.FORMAT);
         }
         TodoElement element = new TodoElement(name, header, description, fileNames, created, tasked);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
     }
 
     private static boolean compareFormat(String inputValue, DateTimeFormatter format) {
