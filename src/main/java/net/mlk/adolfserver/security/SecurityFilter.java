@@ -29,6 +29,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             response.setStatus(401);
             return;
         }
+        request.setAttribute("session", session);
         filterChain.doFilter(request, response);
     }
 
