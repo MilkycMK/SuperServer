@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
     mask VARCHAR(4) NOT NULL,
     creation_time DATETIME NOT NULL,
     expiration_time DATETIME NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS `todo` (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS `todo` (
     description LONGTEXT,
     files LONGTEXT,
     creation_time DATETIME NOT NULL,
-    task_time DATETIME
+    task_time DATETIME NOT NULL
 )

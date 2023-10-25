@@ -16,7 +16,7 @@ public class User {
     }
 
     public User(String name, String password) {
-        this.setName(name);
+        this.setName(name.toLowerCase());
         this.setPassword(password);
         UserService.saveUser(this);
     }

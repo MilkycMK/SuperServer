@@ -14,15 +14,17 @@ public class Session {
     private String name;
     private String token;
     private String mask;
-    private LocalDateTime creation_time;
-    private LocalDateTime expiration_time;
+    @Column(name = "creation_time")
+    private LocalDateTime creationTime;
+    @Column(name = "expiration_time")
+    private LocalDateTime expirationTime;
 
     protected Session() {
 
     }
 
     public Session(Token token) {
-        this.setName(token.getName());
+        this.setName(token.getName().toLowerCase());
         this.setToken(token.getToken());
         this.setMask(token.getMask());
         this.setCreationTime(token.getCreationTime());
@@ -31,19 +33,19 @@ public class Session {
     }
 
     public void setCreationTime(LocalDateTime creationTime) {
-        this.creation_time = creationTime;
+        this.creationTime = creationTime;
     }
 
     public LocalDateTime getCreationTime() {
-        return this.creation_time;
+        return this.creationTime;
     }
 
     public void setExpirationTime(LocalDateTime expirationTime) {
-        this.expiration_time = expirationTime;
+        this.expirationTime = expirationTime;
     }
 
     public LocalDateTime getExpirationTime() {
-        return this.expiration_time;
+        return this.expirationTime;
     }
 
     public void setMask(String mask) {

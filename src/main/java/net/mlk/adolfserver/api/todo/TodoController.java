@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.session.Session;
 import net.mlk.adolfserver.data.todo.TodoElement;
+import net.mlk.adolfserver.data.todo.TodoRepository;
+import net.mlk.adolfserver.data.todo.TodoService;
 import net.mlk.adolfserver.errors.ResponseError;
 import net.mlk.jmson.JsonList;
 import net.mlk.jmson.utils.JsonConverter;
@@ -17,9 +19,11 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @Controller
 @ControllerAdvice
@@ -28,7 +32,7 @@ public class TodoController {
 
     @PostMapping(path = {"/todo", "/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> todoCreate(@RequestParam(value = "header") String header,
-                                             @RequestParam(value = "task_time", required = false) String taskTime,
+                                             @RequestParam(value = "task_time") String taskTime,
                                              @RequestParam(value = "description", required = false) String description,
                                              @RequestParam(value = "files", required = false) MultipartFile[] files,
                                              HttpServletRequest request,
@@ -64,6 +68,43 @@ public class TodoController {
             tasked = LocalDateTime.parse(taskTime, AdolfServerApplication.FORMAT);
         }
         TodoElement element = new TodoElement(name, header, description, fileNames, created, tasked);
+        return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
+    }
+
+    @GetMapping(path = {"/todo", "/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> todoGet(@RequestParam(value = "date", required = false) String date,
+                                          HttpServletRequest request,
+                                          HttpServletResponse response) {
+        TodoRepository todoRepository = TodoService.getTodoRepository();
+        Session session = (Session) request.getAttribute("session");
+        String name = session.getName();
+        JsonList elements;
+
+        if (date != null) {
+            if (!compareFormat(date, AdolfServerApplication.FORMAT)) {
+                return new ResponseEntity<>(new ResponseError("Неверный формат времени.").toString(), HttpStatus.BAD_REQUEST);
+            }
+            elements = todoRepository.findAllByNameIgnoreCaseAndTaskTime(name, LocalDateTime.parse(date, AdolfServerApplication.FORMAT));
+        } else {
+            elements = todoRepository.findAllDatesByNameIgnoreCase(name).parseTypes(false);
+        }
+
+        return new ResponseEntity<>(elements.toString(), HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = {"/todo", "/todo/"})
+    public ResponseEntity<String> todoDelete(@RequestParam(value = "id") int id,
+                                             HttpServletRequest request,
+                                             HttpServletResponse response) {
+        Session session = (Session) request.getAttribute("session");
+        String name = session.getName();
+        TodoRepository todoRepository = TodoService.getTodoRepository();
+
+        TodoElement element = todoRepository.findByIdAndNameIgnoreCase(id, name);
+        if (element == null) {
+            return new ResponseEntity<>(new ResponseError("Записи не существует.").toString(), HttpStatus.BAD_REQUEST);
+        }
+        todoRepository.delete(element);
         return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
     }
 

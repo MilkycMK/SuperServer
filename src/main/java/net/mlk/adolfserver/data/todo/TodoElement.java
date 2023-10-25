@@ -18,32 +18,34 @@ public class TodoElement implements JsonConvertible {
     private String description;
     @Convert(converter = ListConverter.class)
     private JsonList files;
-    private LocalDateTime creation_time;
-    private LocalDateTime task_time;
+    @Column(name = "creation_time")
+    private LocalDateTime creationTime;
+    @Column(name = "task_time")
+    private LocalDateTime taskTime;
 
     protected TodoElement() {
 
     }
 
-    public TodoElement(String name, String header, LocalDateTime creation_time) {
-        this(name, header, null, creation_time);
+    public TodoElement(String name, String header, LocalDateTime creationTime) {
+        this(name, header, null, creationTime);
     }
 
-    public TodoElement(String name, String header, String description, LocalDateTime creation_time) {
-        this(name, header, description, null, creation_time);
+    public TodoElement(String name, String header, String description, LocalDateTime creationTime) {
+        this(name, header, description, null, creationTime);
     }
 
-    public TodoElement(String name, String header, String description, JsonList files, LocalDateTime creation_time) {
-        this(name, header, description, files, creation_time, null);
+    public TodoElement(String name, String header, String description, JsonList files, LocalDateTime creationTime) {
+        this(name, header, description, files, creationTime, null);
     }
 
-    public TodoElement(String name, String header, String description, JsonList files, LocalDateTime creation_time, LocalDateTime task_time) {
+    public TodoElement(String name, String header, String description, JsonList files, LocalDateTime creationTime, LocalDateTime taskTime) {
         this.setName(name);
         this.setHeader(header);
         this.setDescription(description);
         this.setFiles(files);
-        this.setCreationTime(creation_time);
-        this.setTaskTime(task_time);
+        this.setCreationTime(creationTime);
+        this.setTaskTime(taskTime);
         TodoService.saveTodo(this);
     }
 
@@ -80,19 +82,19 @@ public class TodoElement implements JsonConvertible {
     }
 
     public void setCreationTime(LocalDateTime creationTime) {
-        this.creation_time = creationTime;
+        this.creationTime = creationTime;
     }
 
     public LocalDateTime getCreationTime() {
-        return this.creation_time;
+        return this.creationTime;
     }
 
     public void setTaskTime(LocalDateTime taskTime) {
-        this.task_time = taskTime;
+        this.taskTime = taskTime;
     }
 
     public LocalDateTime getTaskTime() {
-        return this.task_time;
+        return this.taskTime;
     }
 
     public int getId() {
