@@ -1,7 +1,6 @@
 package net.mlk.adolfserver.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import net.mlk.adolfserver.data.session.Session;
 import net.mlk.adolfserver.data.session.SessionRepository;
 import net.mlk.adolfserver.data.session.SessionService;
@@ -9,7 +8,6 @@ import net.mlk.adolfserver.data.user.User;
 import net.mlk.adolfserver.data.user.UserRepository;
 import net.mlk.adolfserver.data.user.UserService;
 import net.mlk.adolfserver.errors.ResponseError;
-import net.mlk.adolfserver.security.exceptions.InvalidTokenException;
 import net.mlk.adolfserver.security.utils.SecurityUtils;
 import net.mlk.jmson.Json;
 import org.springframework.http.HttpStatus;
@@ -17,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.regex.Pattern;
