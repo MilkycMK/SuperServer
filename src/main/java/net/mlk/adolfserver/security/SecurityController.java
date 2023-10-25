@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.regex.Pattern;
@@ -59,7 +60,7 @@ public class SecurityController {
         return new ResponseEntity<>(new UserEntity(name, token.getToken()).toString(), HttpStatus.OK);
     }
 
-    @PostMapping(path = {"/logout", "/logout/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = {"/logout", "/logout/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> logout(HttpServletRequest request) {
         SessionRepository sessionRepository = SessionService.getSessionRepository();
         String authorization = request.getHeader("Authorization");
