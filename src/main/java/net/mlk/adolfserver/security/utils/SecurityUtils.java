@@ -1,0 +1,25 @@
+package net.mlk.adolfserver.security.utils;
+
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+public class SecurityUtils {
+
+    public static String sha512Encrypt(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            byte[] messageDigest = md.digest(input.getBytes());
+            BigInteger no = new BigInteger(1, messageDigest);
+            StringBuilder hashtext = new StringBuilder(no.toString(16));
+            while (hashtext.length() < 32) {
+                hashtext.insert(0, "0");
+            }
+            return hashtext.toString();
+        }
+        catch (NoSuchAlgorithmException e) { // You don't have sha512 haha
+            throw new RuntimeException(e);
+        }
+    }
+
+}
