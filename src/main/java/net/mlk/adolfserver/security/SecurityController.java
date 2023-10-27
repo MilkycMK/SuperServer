@@ -30,8 +30,8 @@ public class SecurityController {
     public ResponseEntity<String> signUp(@RequestParam("login") String name,
                                          @RequestParam("password") String password) {
         UserRepository repository = UserService.getUserRepository();
-        if (!NAME_PATTERN.matcher(name).find() || name.length() < 4) {
-            return new ResponseEntity<>(new ResponseError("Имя может содержать только A-Za-z0-9-_ и должно быть больше 4 символов.").toString(), HttpStatus.BAD_REQUEST);
+        if (!NAME_PATTERN.matcher(name).find() || name.length() < 4 || name.length() > 32) {
+            return new ResponseEntity<>(new ResponseError("Имя может содержать только A-Za-z0-9-_ и должно быть больше 4 символов, но не более 32.").toString(), HttpStatus.BAD_REQUEST);
         } else if (repository.existsByNameIgnoreCase(name)) {
             return new ResponseEntity<>(new ResponseError("Пользователь уже существует.").toString(), HttpStatus.CONFLICT);
         } else if (password.length() < 6) {
