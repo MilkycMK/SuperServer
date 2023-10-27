@@ -38,7 +38,7 @@ public class TodoController {
         String name = session.getUserName();
 
         if (header == null || header.isEmpty()) {
-            return new ResponseEntity<>(new ResponseError("Заголовок не может быть пустым.").toString(), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseError("Заголовок не может быть пустым.").toString(), HttpStatus.BAD_REQUEST);
         } else if (taskTime == null || !compareTimeDateFormat(taskTime)) {
             return new ResponseEntity<>(new ResponseError("Неверный формат времени.").toString(), HttpStatus.BAD_REQUEST);
         } else if (files != null) {
