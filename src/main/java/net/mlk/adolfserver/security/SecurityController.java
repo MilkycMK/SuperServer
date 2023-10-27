@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.File;
 import java.util.regex.Pattern;
 
 @Controller
@@ -29,10 +28,11 @@ public class SecurityController {
     @PostMapping(path = {"/signup", "/signup/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> signUp(@RequestParam("login") String name,
                                          @RequestParam("password") String password) {
+        name = name.toLowerCase();
         UserRepository repository = UserService.getUserRepository();
         if (!NAME_PATTERN.matcher(name).find() || name.length() < 4 || name.length() > 32) {
             return new ResponseEntity<>(new ResponseError("Имя может содержать только A-Za-z0-9-_ и должно быть больше 4 символов, но не более 32.").toString(), HttpStatus.BAD_REQUEST);
-        } else if (repository.existsByNameIgnoreCase(name)) {
+        } else if (repository.existsByName(name)) {
             return new ResponseEntity<>(new ResponseError("Пользователь уже существует.").toString(), HttpStatus.CONFLICT);
         } else if (password.length() < 6) {
             return new ResponseEntity<>(new ResponseError("Минимальная длина пароля - 6 символов.").toString(), HttpStatus.BAD_REQUEST);
@@ -40,20 +40,17 @@ public class SecurityController {
 
         User user = new User(name, SecurityUtils.sha512Encrypt(password));
         Token token = new Token(name, true, TOKEN_DURATION);
-        File file = new File("userFiles/" + name);
-        if (!file.exists()) {
-            file.mkdir();
-        }
-        return new ResponseEntity<>(new UserEntity(name, token.getToken()).toString(), HttpStatus.OK);
+        return new ResponseEntity<>(new UserEntity(token).toString(), HttpStatus.OK);
     }
 
     @PostMapping(path = {"/signin", "/signin/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> signIn(@RequestParam("login") String name,
                                          @RequestParam("password") String password) {
         UserRepository repository = UserService.getUserRepository();
+        name = name.toLowerCase();
         password = SecurityUtils.sha512Encrypt(password);
 
-        User user = repository.findByNameIgnoreCase(name);
+        User user = repository.findByName(name);
 
         if (user == null) {
             return new ResponseEntity<>(new ResponseError("Пользователь не найден.").toString(), HttpStatus.UNAUTHORIZED);
@@ -62,7 +59,7 @@ public class SecurityController {
         }
 
         Token token = new Token(name, true, TOKEN_DURATION);
-        return new ResponseEntity<>(new UserEntity(name, token.getToken()).toString(), HttpStatus.OK);
+        return new ResponseEntity<>(new UserEntity(token).toString(), HttpStatus.OK);
     }
 
     @RequestMapping(path = {"/logout", "/logout/"}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,12 +72,12 @@ public class SecurityController {
     }
 
     private static class UserEntity {
-        private String name;
-        private String token;
+        private final String name;
+        private final String token;
 
-        public UserEntity(String name, String token) {
-            this.setName(name);
-            this.setToken(token);
+        public UserEntity(Token token) {
+            this.name = token.getUserName();
+            this.token = token.getToken();
         }
 
         public Json getJson() {
@@ -93,16 +90,8 @@ public class SecurityController {
             return this.name;
         }
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
         public String getToken() {
             return this.token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
         }
 
         @Override
