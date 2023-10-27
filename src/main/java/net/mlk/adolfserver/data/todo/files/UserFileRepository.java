@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserFileRepository extends JpaRepository<UserFile, Integer> {
+    UserFile findByUserNameAndTaskIdAndFileName(String name, int taskId, String fileName);
 }
