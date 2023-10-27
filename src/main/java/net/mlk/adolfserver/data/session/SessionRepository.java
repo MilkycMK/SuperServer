@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SessionRepository extends JpaRepository<Session, Integer> {
-    Session findByNameIgnoreCaseAndToken(String name, String token);
+    Session findByUserNameAndToken(String name, String token);
     Session findByToken(String token);
 }
