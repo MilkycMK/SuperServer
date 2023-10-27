@@ -77,8 +77,11 @@ public class TodoController {
         return new ResponseEntity<>(elements.toString(), HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/todo", "/todo/"})
-    public ResponseEntity<String> todoDelete(@RequestParam(value = "id") int id,
+    @RequestMapping(path = {"/todo", "/todo/"}, method = RequestMethod.POST, headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> todoUpdate(@RequestParam(value = "id") int id,
+                                             @RequestParam(value = "header", required = false) String header,
+                                             @RequestParam(value = "description", required = false) String description,
+                                             @RequestParam(value = "files", required = false) MultipartFile[] files,
                                              HttpServletRequest request,
                                              HttpServletResponse response) {
         TodoRepository todoRepository = TodoService.getTodoRepository();
@@ -89,9 +92,51 @@ public class TodoController {
         if (element == null) {
             return new ResponseEntity<>(new ResponseError("Записи не существует.").toString(), HttpStatus.BAD_REQUEST);
         }
-        element.deleteFiles();
-        todoRepository.delete(element);
+
+        if (header != null) {
+            if (header.isEmpty()) {
+                return new ResponseEntity<>(new ResponseError("Заголовок не может быть пустым.").toString(), HttpStatus.BAD_REQUEST);
+            }
+            element.setHeader(header);
+        }
+
+        if (description != null) {
+            element.setDescription(description);
+        }
+
+        if (files != null) {
+            if (element.getFilesCount() + files.length > 5) {
+                return new ResponseEntity<>(new ResponseError("Максимум можно загрузить 5 файлов.").toString(), HttpStatus.BAD_REQUEST);
+            }
+            element.uploadFiles(files);
+        }
+
+        TodoService.saveTodo(element);
         return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = {"/todo", "/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> todoDelete(@RequestParam(value = "id") int id,
+                                             @RequestParam(value = "files", required = false) List<String> files,
+                                             HttpServletRequest request,
+                                             HttpServletResponse response) {
+        TodoRepository todoRepository = TodoService.getTodoRepository();
+        Session session = (Session) request.getAttribute("session");
+        String name = session.getUserName();
+
+        TodoElement element = todoRepository.findByIdAndUserName(id, name);
+        if (element == null) {
+            return new ResponseEntity<>(new ResponseError("Записи не существует.").toString(), HttpStatus.BAD_REQUEST);
+        }
+
+        if (files == null) {
+            element.deleteFiles();
+            todoRepository.delete(element);
+            return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
+        } else {
+            element.deleteFiles(files);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
     }
 
     private static boolean compareTimeDateFormat(String inputValue) {
