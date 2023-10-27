@@ -2,8 +2,6 @@ package net.mlk.adolfserver.security;
 
 import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.session.Session;
-import net.mlk.adolfserver.security.exceptions.InvalidTokenException;
-
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -12,7 +10,7 @@ import java.util.UUID;
 public class Token {
     private static final int MASK_LENGTH = 4;
 
-    private String name;
+    private String userName;
     private String token;
     private final String mask;
 
@@ -20,21 +18,21 @@ public class Token {
     private LocalDateTime creationTime;
     private LocalDateTime expirationTime;
 
-    public Token(String token, String mask) throws InvalidTokenException {
+    public Token(String token, String mask) {
         this.mask = mask;
         this.token = token;
         this.decodeToken(token);
     }
 
-    public Token(String name, boolean expiring, long seconds) {
-        this.name = name;
+    public Token(String userName, boolean expiring, long seconds) {
+        this.userName = userName;
         this.mask = this.generateMask();
         this.expiring = expiring;
         if (expiring) {
             this.creationTime = LocalDateTime.now();
             this.expirationTime = this.creationTime.plusSeconds(seconds);
         }
-        this.token = encodeToken(name);
+        this.token = encodeToken(userName);
         Session session = new Session(this);
     }
 
@@ -44,8 +42,8 @@ public class Token {
         String tokenBase = this.generateString();
         if (this.expiring) {
             token.append("expiring=true@")
-                    .append(this.creationTime.format(AdolfServerApplication.FORMAT)).append("@")
-                    .append(this.expirationTime.format(AdolfServerApplication.FORMAT)).append("@");
+                    .append(this.creationTime.format(AdolfServerApplication.TIMEDATE_FORMAT)).append("@")
+                    .append(this.expirationTime.format(AdolfServerApplication.TIMEDATE_FORMAT)).append("@");
         } else {
             token.append("@expiring=false@");
         }
@@ -58,12 +56,12 @@ public class Token {
     public void decodeToken(String token) /* throws InvalidTokenException */ {
         token = unmaskString(token);
         String[] tokenParts = token.split("@");
-        this.name = tokenParts[0];
+        this.userName = tokenParts[0];
         this.expiring = Boolean.parseBoolean(tokenParts[1].split("=")[1]);
 
         if (this.expiring) {
-            this.creationTime = LocalDateTime.parse(tokenParts[2], AdolfServerApplication.FORMAT);
-            this.expirationTime = LocalDateTime.parse(tokenParts[3], AdolfServerApplication.FORMAT);
+            this.creationTime = LocalDateTime.parse(tokenParts[2], AdolfServerApplication.TIMEDATE_FORMAT);
+            this.expirationTime = LocalDateTime.parse(tokenParts[3], AdolfServerApplication.TIMEDATE_FORMAT);
         }
     }
 
@@ -132,8 +130,8 @@ public class Token {
         return this.mask;
     }
 
-    public String getName() {
-        return this.name;
+    public String getUserName() {
+        return this.userName;
     }
 
     @Override
