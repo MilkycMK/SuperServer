@@ -19,7 +19,6 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         SessionRepository sessionRepository = SessionService.getSessionRepository();
         String authorization = request.getHeader("Authorization");
-
         Session session;
         if (authorization == null || (session = sessionRepository.findByToken(authorization)) == null) {
             response.setStatus(401);
@@ -38,6 +37,5 @@ public class SecurityFilter extends OncePerRequestFilter {
         String path = request.getRequestURI().toLowerCase();
         return path.startsWith("/signin") || path.startsWith("/signup");
     }
-
 
 }
