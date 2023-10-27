@@ -37,7 +37,10 @@ public class UserFile implements JsonConvertible {
         this.fileName = file.getOriginalFilename();
         this.taskId = taskId;
         this.createFile(file);
-        UserFileService.saveUserFile(this);
+        UserFile f = UserFileService.getUserFileRepository().findByUserNameAndTaskIdAndFileName(userName, taskId, fileName);
+        if (f == null) {
+            UserFileService.saveUserFile(this);
+        }
     }
 
     public int getId() {
