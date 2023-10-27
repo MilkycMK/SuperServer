@@ -18,17 +18,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Controller
 @ControllerAdvice
 public class TodoController {
-    public static final int MAX_FILE_SIZE = 10; // mb
 
     @PostMapping(path = {"/todo", "/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> todoCreate(@RequestParam(value = "header") String header,
@@ -36,13 +33,13 @@ public class TodoController {
                                              @RequestParam(value = "description", required = false) String description,
                                              @RequestParam(value = "files", required = false) MultipartFile[] files,
                                              HttpServletRequest request,
-                                             HttpServletResponse response) throws IOException {
+                                             HttpServletResponse response) {
         Session session = (Session) request.getAttribute("session");
-        String name = session.getName();
+        String name = session.getUserName();
 
-        if (header.isEmpty()) {
-            return new ResponseEntity<>(new ResponseError("Заголовок пустует...").toString(), HttpStatus.BAD_REQUEST);
-        } else if (taskTime != null && !compareFormat(taskTime, AdolfServerApplication.FORMAT)) {
+        if (header == null || header.isEmpty()) {
+            return new ResponseEntity<>(new ResponseError("Заголовок не может быть пустым.").toString(), HttpStatus.OK);
+        } else if (taskTime == null || !compareTimeDateFormat(taskTime)) {
             return new ResponseEntity<>(new ResponseError("Неверный формат времени.").toString(), HttpStatus.BAD_REQUEST);
         } else if (files != null) {
             if (files.length > 5) {
@@ -50,24 +47,9 @@ public class TodoController {
             }
         }
 
-        JsonList fileNames = new JsonList();
-
-        if (files != null) {
-            for (MultipartFile file : files) {
-                String fileName = file.getOriginalFilename();
-                fileNames.add(fileName);
-                try (OutputStream outStream = new FileOutputStream("userFiles/" + name + "/" + fileName)) {
-                    outStream.write(file.getBytes());
-                }
-            }
-        }
-
         LocalDateTime created = LocalDateTime.now();
-        LocalDateTime tasked = null;
-        if (taskTime != null) {
-            tasked = LocalDateTime.parse(taskTime, AdolfServerApplication.FORMAT);
-        }
-        TodoElement element = new TodoElement(name, header, description, fileNames, created, tasked);
+        LocalDateTime tasked = LocalDateTime.parse(taskTime, AdolfServerApplication.TIMEDATE_FORMAT);
+        TodoElement element = new TodoElement(name, header, description, files, created, tasked);
         return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
     }
 
@@ -75,18 +57,21 @@ public class TodoController {
     public ResponseEntity<String> todoGet(@RequestParam(value = "date", required = false) String date,
                                           HttpServletRequest request,
                                           HttpServletResponse response) {
-        TodoRepository todoRepository = TodoService.getTodoRepository();
         Session session = (Session) request.getAttribute("session");
-        String name = session.getName();
-        JsonList elements;
+        String name = session.getUserName();
+        TodoRepository todoRepository = TodoService.getTodoRepository();
+        JsonList elements = new JsonList();
 
-        if (date != null) {
-            if (!compareFormat(date, AdolfServerApplication.FORMAT)) {
-                return new ResponseEntity<>(new ResponseError("Неверный формат времени.").toString(), HttpStatus.BAD_REQUEST);
-            }
-            elements = todoRepository.findAllByNameIgnoreCaseAndTaskTime(name, LocalDateTime.parse(date, AdolfServerApplication.FORMAT));
+        if (date == null) {
+            elements = todoRepository.findAllDatesByName(name).parseTypes(false);
         } else {
-            elements = todoRepository.findAllDatesByNameIgnoreCase(name).parseTypes(false);
+            if (!compareDateFormat(date)) {
+                return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
+            }
+            List<TodoElement> raw = todoRepository.findAllByUserNameAndTaskTime(name, LocalDate.parse(date));
+            for (TodoElement element : raw) {
+                elements.append(JsonConverter.convertToJson(element));
+            }
         }
 
         return new ResponseEntity<>(elements.toString(), HttpStatus.OK);
@@ -96,32 +81,41 @@ public class TodoController {
     public ResponseEntity<String> todoDelete(@RequestParam(value = "id") int id,
                                              HttpServletRequest request,
                                              HttpServletResponse response) {
-        Session session = (Session) request.getAttribute("session");
-        String name = session.getName();
         TodoRepository todoRepository = TodoService.getTodoRepository();
+        Session session = (Session) request.getAttribute("session");
+        String name = session.getUserName();
 
-        TodoElement element = todoRepository.findByIdAndNameIgnoreCase(id, name);
+        TodoElement element = todoRepository.findByIdAndUserName(id, name);
         if (element == null) {
             return new ResponseEntity<>(new ResponseError("Записи не существует.").toString(), HttpStatus.BAD_REQUEST);
         }
+        element.deleteFiles();
         todoRepository.delete(element);
         return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
     }
 
-    private static boolean compareFormat(String inputValue, DateTimeFormatter format) {
+    private static boolean compareTimeDateFormat(String inputValue) {
         try {
-            format.parse(inputValue);
+            AdolfServerApplication.TIMEDATE_FORMAT.parse(inputValue);
             return true;
         } catch (DateTimeParseException dtpe) {
             return false;
         }
     }
 
+    private static boolean compareDateFormat(String inputValue) {
+        try {
+            AdolfServerApplication.DATE_FORMAT.parse(inputValue);
+            return true;
+        } catch (DateTimeParseException dtpe) {
+            return false;
+        }
+    }
 
     @ExceptionHandler(MultipartException.class)
-    @ResponseBody
-    public ResponseEntity<String> multipartExceptionHandler(MultipartException e) {
-        return new ResponseEntity<>(new ResponseError("Размер файлов не должен быть больше " + MAX_FILE_SIZE + "мб").toString(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> multipartExceptionHandler(MultipartException ex) {
+        return new ResponseEntity<>(new ResponseError("Размер файлов не должен быть больше "
+                + AdolfServerApplication.MAX_FILE_SIZE + "мб").toString(), HttpStatus.BAD_REQUEST);
     }
 
 }
