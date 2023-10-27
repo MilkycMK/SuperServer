@@ -62,12 +62,28 @@ public class TodoElement implements JsonConvertible {
         this.taskTime = taskTime;
         TodoService.saveTodo(this);
         if (files != null) {
-            for (MultipartFile file : files) {
-                if (file.getOriginalFilename() != null && !file.getOriginalFilename().isEmpty()) {
-                    this.userFiles.add(new UserFile(this.userName, file, this.id));
-                }
+            this.uploadFiles(files);
+        }
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void uploadFiles(MultipartFile[] files) {
+        for (MultipartFile file : files) {
+            if (file.getOriginalFilename() != null && !file.getOriginalFilename().isEmpty()) {
+                this.userFiles.add(new UserFile(this.userName, file, this.id));
             }
         }
+    }
+
+    public int getFilesCount() {
+        return this.userFiles.size();
     }
 
     public int getId() {
@@ -99,6 +115,21 @@ public class TodoElement implements JsonConvertible {
             UserFileService.getUserFileRepository().delete(file);
         }
         this.deleteDirectory(new File(String.format(AdolfServerApplication.FILES_PATH_TEMPLATE, this.userName, this.id)));
+    }
+
+    public void deleteFiles(List<String> files) {
+        for (String str : files) {
+            for (UserFile file : this.userFiles) {
+                String name = file.getFileName();
+                if (str.equals(name)) {
+                    UserFileService.getUserFileRepository().delete(file);
+                    File delFile = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.userName, this.id, file.getFileName()));
+                    if (delFile.exists()) {
+                        delFile.delete();
+                    }
+                }
+            }
+        }
     }
 
     private boolean deleteDirectory(File directoryToBeDeleted) {
