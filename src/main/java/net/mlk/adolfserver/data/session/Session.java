@@ -11,7 +11,8 @@ public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String name;
+    @Column(name = "user_name")
+    private String userName;
     private String token;
     private String mask;
     @Column(name = "creation_time")
@@ -24,51 +25,36 @@ public class Session {
     }
 
     public Session(Token token) {
-        this.setName(token.getName().toLowerCase());
-        this.setToken(token.getToken());
-        this.setMask(token.getMask());
-        this.setCreationTime(token.getCreationTime());
-        this.setExpirationTime(token.getExpirationTime());
+        this.userName = token.getUserName().toLowerCase();
+        this.token = token.getToken();
+        this.mask = token.getMask();
+        this.creationTime = token.getCreationTime();
+        this.expirationTime = token.getExpirationTime();
         SessionService.saveSession(this);
     }
 
-    public void setCreationTime(LocalDateTime creationTime) {
-        this.creationTime = creationTime;
+    public int getId() {
+        return this.id;
     }
 
-    public LocalDateTime getCreationTime() {
-        return this.creationTime;
+    public String getUserName() {
+        return this.userName;
     }
 
-    public void setExpirationTime(LocalDateTime expirationTime) {
-        this.expirationTime = expirationTime;
-    }
-
-    public LocalDateTime getExpirationTime() {
-        return this.expirationTime;
-    }
-
-    public void setMask(String mask) {
-        this.mask = mask;
+    public String getToken() {
+        return this.token;
     }
 
     public String getMask() {
         return this.mask;
     }
 
-    public void setName(String userName) {
-        this.name = userName;
+    public LocalDateTime getCreationTime() {
+        return this.creationTime;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public LocalDateTime getExpirationTime() {
+        return this.expirationTime;
     }
 
-    public String getName() {
-        return this.name;
-    }
-
-    public String getToken() {
-        return this.token;
-    }
 }
