@@ -8,6 +8,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(name = "user_name")
     private String name;
     private String password;
 
@@ -16,17 +17,9 @@ public class User {
     }
 
     public User(String name, String password) {
-        this.setName(name.toLowerCase());
-        this.setPassword(password);
-        UserService.saveUser(this);
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPassword(String password) {
+        this.name = name.toLowerCase();
         this.password = password;
+        UserService.saveUser(this);
     }
 
     public String getName() {
