@@ -1,7 +1,7 @@
 package net.mlk.adolfserver.security;
 
 import net.mlk.adolfserver.AdolfServerApplication;
-import net.mlk.adolfserver.data.session.Session;
+import net.mlk.adolfserver.data.user.session.Session;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -24,7 +24,7 @@ public class Token {
         this.decodeToken(token);
     }
 
-    public Token(String userName, boolean expiring, long seconds) {
+    public Token(String userName, int userId, boolean expiring, long seconds) {
         this.userName = userName;
         this.mask = this.generateMask();
         this.expiring = expiring;
@@ -33,7 +33,7 @@ public class Token {
             this.expirationTime = this.creationTime.plusSeconds(seconds);
         }
         this.token = encodeToken(userName);
-        Session session = new Session(this);
+        Session session = new Session(userId, this);
     }
 
     private String encodeToken(String name) {
