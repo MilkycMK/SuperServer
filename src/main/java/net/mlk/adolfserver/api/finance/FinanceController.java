@@ -183,30 +183,14 @@ public class FinanceController {
         return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/finance", "/finance"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> financeDelete(@RequestParam(value = "date", required = false) String date,
-                                                HttpServletRequest request,
+    @DeleteMapping(path = {"/finance", "/finance/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> financeDelete(HttpServletRequest request,
                                                 HttpServletResponse response) {
         FinanceRepository financeRepository = FinanceService.getFinanceRepository();
         FinanceArchiveRepository financeArchiveRepository = FinanceArchiveService.getFinanceArchiveRepository();
         Session session = (Session) request.getAttribute("session");
         int userId = session.getUserId();
         FinanceData financeData;
-
-        if (date != null) {
-            if (!AdolfServerApplication.compareDateFormat(date)) {
-                return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
-            }
-
-            financeData = financeRepository.findByUserIdAndMonth(userId,
-                    LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT).getMonthValue());
-            if (financeData == null) {
-                return new ResponseEntity<>(new ResponseError("Отчета на эту дату не найдено.").toString(), HttpStatus.BAD_REQUEST);
-            }
-            financeRepository.delete(financeData);
-            financeArchiveRepository.deleteAll(financeData.getArchiveData());
-            return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
-        }
 
         if ((financeData = financeRepository.findByUserId(userId)) == null) {
             return new ResponseEntity<>(new ResponseError("Учет финансов не найден для этого аккаунта.").toString(), HttpStatus.BAD_REQUEST);
