@@ -19,7 +19,7 @@ public class TodoElement implements JsonConvertible {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "user_name")
+    @Column(name = "user_id")
     @JsonField(key = "user_id")
     private int userId;
     private String header;
