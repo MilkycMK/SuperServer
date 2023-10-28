@@ -33,7 +33,7 @@ public class TodoElement implements JsonConvertible {
     @OneToMany
     @JoinColumns({
             @JoinColumn(updatable=false,insertable=false, name="task_id", referencedColumnName="id"),
-            @JoinColumn(updatable=false,insertable=false, name="user_name", referencedColumnName="user_name"),
+            @JoinColumn(updatable=false,insertable=false, name="user_id", referencedColumnName="user_id"),
         })
     @JsonField(key = "user_files")
     public List<UserFile> userFiles = new ArrayList<>();
