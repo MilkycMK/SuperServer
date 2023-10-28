@@ -1,7 +1,6 @@
 package net.mlk.adolfserver.data.finance;
 
 import jakarta.persistence.*;
-import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.finance.archive.FinanceArchiveData;
 import net.mlk.adolfserver.data.finance.archive.FinanceArchiveService;
 import net.mlk.jmson.annotations.JsonField;
@@ -41,10 +40,10 @@ public class FinanceData implements JsonConvertible {
     public FinanceData(int userId, double salary, double remains, LocalDate salaryDate) {
         this.userId = userId;
         this.salary = salary;
-        this.remains = salary;
         this.creationDate = LocalDate.now();
         this.remains += remains;
         this.salaryDate = salaryDate;
+        this.updateSalary();
         FinanceService.save(this);
         FinanceArchiveData financeArchiveData = new FinanceArchiveData(userId, salary, 0, this.remains, null, this.creationDate, this.salaryDate);
     }
@@ -80,6 +79,16 @@ public class FinanceData implements JsonConvertible {
         FinanceArchiveData financeArchiveData = new FinanceArchiveData(this.userId, this.salary, toSpent, this.remains, description, LocalDate.now(), this.salaryDate);
         FinanceArchiveService.save(financeArchiveData);
         this.archiveData.add(financeArchiveData);
+    }
+
+    public boolean updateSalary() {
+        LocalDate today = LocalDate.now();
+        if (this.salaryDate.getMonth() == today.getMonth() && today.isAfter(this.salaryDate) || this.salaryDate.isEqual(today)) {
+            this.remains += this.salary;
+            this.salaryDate = this.salaryDate.plusMonths(1);
+            return true;
+        }
+        return false;
     }
 
     public LocalDate getSalaryDate() {

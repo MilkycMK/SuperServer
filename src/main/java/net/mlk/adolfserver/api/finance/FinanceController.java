@@ -13,6 +13,7 @@ import net.mlk.adolfserver.data.user.session.Session;
 import net.mlk.adolfserver.errors.ResponseError;
 import net.mlk.jmson.JsonList;
 import net.mlk.jmson.utils.JsonConverter;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class FinanceController {
     @PostMapping(path = {"/finance", "/finance/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createFinance(@RequestParam(value = "salary") double salary,
                                                 @RequestParam(value = "salary_date") String date,
-                                                @RequestParam(value = "remains", required = false) double start,
+                                                @RequestParam(value = "remains", required = false, defaultValue = "0") double start,
                                                 HttpServletRequest request,
                                                 HttpServletResponse response) {
         FinanceRepository financeRepository = FinanceService.getFinanceRepository();
@@ -41,8 +42,8 @@ public class FinanceController {
         } else if (!AdolfServerApplication.compareDateFormat(date)) {
             return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
         }
-
-        FinanceData financeData = new FinanceData(userId, salary, start, LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT));
+        LocalDate salaryDate = LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT);
+        FinanceData financeData = new FinanceData(userId, salary, start, salaryDate);
         return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
     }
 
@@ -57,6 +58,10 @@ public class FinanceController {
 
         if ((financeData = financeRepository.findByUserId(userId)) == null) {
             return new ResponseEntity<>(new ResponseError("Учет финансов не найден для этого аккаунта.").toString(), HttpStatus.BAD_REQUEST);
+        }
+
+        if (financeData.updateSalary()) {
+            financeRepository.save(financeData);
         }
 
         if (date == null) {
@@ -174,6 +179,7 @@ public class FinanceController {
             financeData.spent(spent, description);
         }
 
+        financeData.updateSalary();
         FinanceService.save(financeData);
         return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
     }
@@ -211,4 +217,5 @@ public class FinanceController {
             return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
         }
     }
+
 }
