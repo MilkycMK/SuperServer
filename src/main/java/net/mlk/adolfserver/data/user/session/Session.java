@@ -1,4 +1,4 @@
-package net.mlk.adolfserver.data.session;
+package net.mlk.adolfserver.data.user.session;
 
 import jakarta.persistence.*;
 import net.mlk.adolfserver.security.Token;
@@ -11,8 +11,8 @@ public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "user_name")
-    private String userName;
+    @Column(name = "user_id")
+    private int userId;
     private String token;
     private String mask;
     @Column(name = "creation_time")
@@ -24,8 +24,8 @@ public class Session {
 
     }
 
-    public Session(Token token) {
-        this.userName = token.getUserName().toLowerCase();
+    public Session(int userId, Token token) {
+        this.userId = userId;
         this.token = token.getToken();
         this.mask = token.getMask();
         this.creationTime = token.getCreationTime();
@@ -37,8 +37,8 @@ public class Session {
         return this.id;
     }
 
-    public String getUserName() {
-        return this.userName;
+    public int getUserId() {
+        return this.userId;
     }
 
     public String getToken() {
