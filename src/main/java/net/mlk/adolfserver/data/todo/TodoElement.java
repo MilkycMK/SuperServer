@@ -20,8 +20,8 @@ public class TodoElement implements JsonConvertible {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "user_name")
-    @JsonField(key = "user_name")
-    private String userName;
+    @JsonField(key = "user_id")
+    private int userId;
     private String header;
     private String description;
     @Column(name = "creation_time")
@@ -42,20 +42,20 @@ public class TodoElement implements JsonConvertible {
 
     }
 
-    public TodoElement(String userName, String header, LocalDateTime creationTime) {
-        this(userName, header, null, creationTime);
+    public TodoElement(int userId, String header, LocalDateTime creationTime) {
+        this(userId, header, null, creationTime);
     }
 
-    public TodoElement(String userName, String header, String description, LocalDateTime creationTime) {
-        this(userName, header, description, null, creationTime);
+    public TodoElement(int userId, String header, String description, LocalDateTime creationTime) {
+        this(userId, header, description, null, creationTime);
     }
 
-    public TodoElement(String userName, String header, String description, MultipartFile[] files, LocalDateTime creationTime) {
-        this(userName, header, description, files, creationTime, null);
+    public TodoElement(int userId, String header, String description, MultipartFile[] files, LocalDateTime creationTime) {
+        this(userId, header, description, files, creationTime, null);
     }
 
-    public TodoElement(String userName, String header, String description, MultipartFile[] files, LocalDateTime creationTime, LocalDateTime taskTime) {
-        this.userName = userName;
+    public TodoElement(int userId, String header, String description, MultipartFile[] files, LocalDateTime creationTime, LocalDateTime taskTime) {
+        this.userId = userId;
         this.header = header;
         this.description = description;
         this.creationTime = creationTime;
@@ -77,7 +77,7 @@ public class TodoElement implements JsonConvertible {
     public void uploadFiles(MultipartFile[] files) {
         for (MultipartFile file : files) {
             if (file.getOriginalFilename() != null && !file.getOriginalFilename().isEmpty()) {
-                this.userFiles.add(new UserFile(this.userName, file, this.id));
+                this.userFiles.add(new UserFile(this.userId, file, this.id));
             }
         }
     }
@@ -90,8 +90,8 @@ public class TodoElement implements JsonConvertible {
         return this.id;
     }
 
-    public String getUserName() {
-        return this.userName;
+    public int getUserName() {
+        return this.userId;
     }
 
     public String getHeader() {
@@ -114,7 +114,7 @@ public class TodoElement implements JsonConvertible {
         for (UserFile file : this.userFiles) {
             UserFileService.getUserFileRepository().delete(file);
         }
-        this.deleteDirectory(new File(String.format(AdolfServerApplication.FILES_PATH_TEMPLATE, this.userName, this.id)));
+        this.deleteDirectory(new File(String.format(AdolfServerApplication.FILES_PATH_TEMPLATE, this.userId, this.id)));
     }
 
     public void deleteFiles(List<String> files) {
@@ -123,7 +123,7 @@ public class TodoElement implements JsonConvertible {
                 String name = file.getFileName();
                 if (str.equals(name)) {
                     UserFileService.getUserFileRepository().delete(file);
-                    File delFile = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.userName, this.id, file.getFileName()));
+                    File delFile = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.userId, this.id, file.getFileName()));
                     if (delFile.exists()) {
                         delFile.delete();
                     }
