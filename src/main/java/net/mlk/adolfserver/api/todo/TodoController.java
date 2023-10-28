@@ -3,7 +3,7 @@ package net.mlk.adolfserver.api.todo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.mlk.adolfserver.AdolfServerApplication;
-import net.mlk.adolfserver.data.session.Session;
+import net.mlk.adolfserver.data.user.session.Session;
 import net.mlk.adolfserver.data.todo.TodoElement;
 import net.mlk.adolfserver.data.todo.TodoRepository;
 import net.mlk.adolfserver.data.todo.TodoService;
@@ -35,7 +35,7 @@ public class TodoController {
                                              HttpServletRequest request,
                                              HttpServletResponse response) {
         Session session = (Session) request.getAttribute("session");
-        String name = session.getUserName();
+        int userId = session.getUserId();
 
         if (header == null || header.isEmpty()) {
             return new ResponseEntity<>(new ResponseError("Заголовок не может быть пустым.").toString(), HttpStatus.BAD_REQUEST);
@@ -49,7 +49,7 @@ public class TodoController {
 
         LocalDateTime created = LocalDateTime.now();
         LocalDateTime tasked = LocalDateTime.parse(taskTime, AdolfServerApplication.TIMEDATE_FORMAT);
-        TodoElement element = new TodoElement(name, header, description, files, created, tasked);
+        TodoElement element = new TodoElement(userId, header, description, files, created, tasked);
         return new ResponseEntity<>(JsonConverter.convertToJson(element).toString(), HttpStatus.OK);
     }
 
@@ -58,17 +58,17 @@ public class TodoController {
                                           HttpServletRequest request,
                                           HttpServletResponse response) {
         Session session = (Session) request.getAttribute("session");
-        String name = session.getUserName();
+        int userId = session.getUserId();
         TodoRepository todoRepository = TodoService.getTodoRepository();
         JsonList elements = new JsonList();
 
         if (date == null) {
-            elements = todoRepository.findAllDatesByName(name).parseTypes(false);
+            elements = todoRepository.findAllDatesByUserId(userId).parseTypes(false);
         } else {
             if (!compareDateFormat(date)) {
                 return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
             }
-            List<TodoElement> raw = todoRepository.findAllByUserNameAndTaskTime(name, LocalDate.parse(date));
+            List<TodoElement> raw = todoRepository.findAllByUserIdAndTaskTime(userId, LocalDate.parse(date));
             for (TodoElement element : raw) {
                 elements.append(JsonConverter.convertToJson(element));
             }
@@ -86,9 +86,9 @@ public class TodoController {
                                              HttpServletResponse response) {
         TodoRepository todoRepository = TodoService.getTodoRepository();
         Session session = (Session) request.getAttribute("session");
-        String name = session.getUserName();
+        int userId = session.getUserId();
 
-        TodoElement element = todoRepository.findByIdAndUserName(id, name);
+        TodoElement element = todoRepository.findByIdAndUserId(id, userId);
         if (element == null) {
             return new ResponseEntity<>(new ResponseError("Записи не существует.").toString(), HttpStatus.BAD_REQUEST);
         }
@@ -122,9 +122,9 @@ public class TodoController {
                                              HttpServletResponse response) {
         TodoRepository todoRepository = TodoService.getTodoRepository();
         Session session = (Session) request.getAttribute("session");
-        String name = session.getUserName();
+        int userId = session.getUserId();
 
-        TodoElement element = todoRepository.findByIdAndUserName(id, name);
+        TodoElement element = todoRepository.findByIdAndUserId(id, userId);
         if (element == null) {
             return new ResponseEntity<>(new ResponseError("Записи не существует.").toString(), HttpStatus.BAD_REQUEST);
         }
