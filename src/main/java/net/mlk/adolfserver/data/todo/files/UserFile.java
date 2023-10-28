@@ -18,9 +18,9 @@ public class UserFile implements JsonConvertible {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "user_name")
-    @JsonField(key = "user_name")
-    private String userName;
+    @Column(name = "user_id")
+    @JsonField(key = "user_id")
+    private int userId;
     @Column(name = "file_name")
     @JsonField(key = "file_name")
     private String fileName;
@@ -32,12 +32,12 @@ public class UserFile implements JsonConvertible {
 
     }
 
-    public UserFile(String userName, MultipartFile file, int taskId) {
-        this.userName = userName;
+    public UserFile(int userId, MultipartFile file, int taskId) {
+        this.userId = userId;
         this.fileName = file.getOriginalFilename();
         this.taskId = taskId;
         this.createFile(file);
-        UserFile f = UserFileService.getUserFileRepository().findByUserNameAndTaskIdAndFileName(userName, taskId, fileName);
+        UserFile f = UserFileService.getUserFileRepository().findByUserIdAndTaskIdAndFileName(userId, taskId, fileName);
         if (f == null) {
             UserFileService.saveUserFile(this);
         }
@@ -47,8 +47,8 @@ public class UserFile implements JsonConvertible {
         return this.id;
     }
 
-    public String getUserName() {
-        return this.userName;
+    public int getUserId() {
+        return this.userId;
     }
 
     public String getFileName() {
@@ -61,7 +61,7 @@ public class UserFile implements JsonConvertible {
 
     private String createFile(MultipartFile file) {
         String fileName = file.getOriginalFilename();
-        File filePath = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.userName, this.taskId, file.getOriginalFilename()));
+        File filePath = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.userId, this.taskId, file.getOriginalFilename()));
         if (!filePath.getParentFile().exists()) {
             filePath.getParentFile().mkdirs();
         }
