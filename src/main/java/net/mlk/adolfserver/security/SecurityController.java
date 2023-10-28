@@ -1,9 +1,9 @@
 package net.mlk.adolfserver.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import net.mlk.adolfserver.data.session.Session;
-import net.mlk.adolfserver.data.session.SessionRepository;
-import net.mlk.adolfserver.data.session.SessionService;
+import net.mlk.adolfserver.data.user.session.Session;
+import net.mlk.adolfserver.data.user.session.SessionRepository;
+import net.mlk.adolfserver.data.user.session.SessionService;
 import net.mlk.adolfserver.data.user.User;
 import net.mlk.adolfserver.data.user.UserRepository;
 import net.mlk.adolfserver.data.user.UserService;

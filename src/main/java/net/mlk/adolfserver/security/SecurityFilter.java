@@ -3,9 +3,9 @@ package net.mlk.adolfserver.security;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import net.mlk.adolfserver.data.session.Session;
-import net.mlk.adolfserver.data.session.SessionRepository;
-import net.mlk.adolfserver.data.session.SessionService;
+import net.mlk.adolfserver.data.user.session.Session;
+import net.mlk.adolfserver.data.user.session.SessionRepository;
+import net.mlk.adolfserver.data.user.session.SessionService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
