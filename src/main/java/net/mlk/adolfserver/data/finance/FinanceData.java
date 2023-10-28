@@ -15,14 +15,26 @@ public class FinanceData {
     private int userId;
     private double salary;
     private double remains;
-    @Column(name = "creation_date")
-    private LocalDateTime creationDate;
+    @Column(name = "creation_time")
+    private LocalDateTime creationTime;
     @OneToMany
     @JoinColumns({
             @JoinColumn(updatable=false,insertable=false, name="finance_id", referencedColumnName="id"),
-            @JoinColumn(updatable=false,insertable=false, name="user_name", referencedColumnName="user_id"),
+            @JoinColumn(updatable=false,insertable=false, name="user_id", referencedColumnName="user_id"),
     })
     private List<FinanceArchiveData> archiveData;
+
+    protected  FinanceData() {
+
+    }
+
+    public FinanceData(int userId, double salary) {
+        this.userId = userId;
+        this.salary = salary;
+        this.remains = salary;
+        this.creationTime = LocalDateTime.now();
+        FinanceService.save(this);
+    }
 
     public int getId() {
         return this.id;
@@ -40,7 +52,7 @@ public class FinanceData {
         return this.remains;
     }
 
-    public LocalDateTime getCreationDate() {
-        return this.creationDate;
+    public LocalDateTime getCreationTime() {
+        return this.creationTime;
     }
 }

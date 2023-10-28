@@ -46,5 +46,6 @@ CREATE TABLE IF NOT EXISTS finance_archive (
     finance_id INTEGER NOT NULL,
     spent DOUBLE NOT NULL,
     remains DOUBLE NOT NULL,
+    description LONGTEXT,
     creation_time DATETIME NOT NULL
 );

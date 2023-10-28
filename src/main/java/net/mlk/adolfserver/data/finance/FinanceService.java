@@ -12,6 +12,10 @@ public class FinanceService {
         FinanceService.financeRepository = financeRepository;
     }
 
+    public static void save(FinanceData financeData) {
+        financeRepository.save(financeData);
+    }
+
     public static FinanceRepository getFinanceRepository() {
         return financeRepository;
     }

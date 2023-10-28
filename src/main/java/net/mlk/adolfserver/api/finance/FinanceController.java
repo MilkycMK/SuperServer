@@ -2,6 +2,7 @@ package net.mlk.adolfserver.api.finance;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.mlk.adolfserver.data.finance.FinanceData;
 import net.mlk.adolfserver.data.finance.FinanceRepository;
 import net.mlk.adolfserver.data.finance.FinanceService;
 import net.mlk.adolfserver.data.user.session.Session;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class FinanceController {
 
     @PostMapping(path = {"/finance", "/finance/"})
-    public ResponseEntity<String> createFinanceTable(@RequestParam(value = "salary") int salary,
+    public ResponseEntity<String> createFinanceTable(@RequestParam(value = "salary") double salary,
                                                      HttpServletRequest request,
                                                      HttpServletResponse response) {
         FinanceRepository financeRepository = FinanceService.getFinanceRepository();
@@ -30,6 +31,7 @@ public class FinanceController {
             return new ResponseEntity<>(new ResponseError("Странный вы человек, если у вас зарплата меньше 1...").toString(), HttpStatus.BAD_REQUEST);
         }
 
+        FinanceData financeData = new FinanceData(userId, salary);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
