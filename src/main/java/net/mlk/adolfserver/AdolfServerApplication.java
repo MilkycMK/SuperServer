@@ -39,9 +39,4 @@ public class AdolfServerApplication {
         }
     }
 
-    @RequestMapping(path = {"", "/"})
-    public String index() {
-        return "test";
-    }
-
 }
