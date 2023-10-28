@@ -39,7 +39,7 @@ public class SecurityController {
         }
 
         User user = new User(name, SecurityUtils.sha512Encrypt(password));
-        Token token = new Token(name, true, TOKEN_DURATION);
+        Token token = new Token(name, user.getId(), true, TOKEN_DURATION);
         return new ResponseEntity<>(new UserEntity(token).toString(), HttpStatus.OK);
     }
 
@@ -58,7 +58,7 @@ public class SecurityController {
             return new ResponseEntity<>(new ResponseError("Неверный пароль.").toString(), HttpStatus.UNAUTHORIZED);
         }
 
-        Token token = new Token(name, true, TOKEN_DURATION);
+        Token token = new Token(name, user.getId(), true, TOKEN_DURATION);
         return new ResponseEntity<>(new UserEntity(token).toString(), HttpStatus.OK);
     }
 
