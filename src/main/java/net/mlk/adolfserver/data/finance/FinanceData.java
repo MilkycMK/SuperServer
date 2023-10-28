@@ -1,5 +1,6 @@
 package net.mlk.adolfserver.data.finance;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -9,5 +10,6 @@ import jakarta.persistence.Table;
 public class FinanceData {
     @Id
     private int id;
-    private String userName;
+    @Column(name = "user_id")
+    private int userId;
 }
