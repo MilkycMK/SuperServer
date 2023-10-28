@@ -21,7 +21,7 @@ public class FinanceController {
                                                      HttpServletRequest request,
                                                      HttpServletResponse response) {
         FinanceRepository financeRepository = FinanceService.getFinanceRepository();
-        Session session = (Session) request.getSession();
+        Session session = (Session) request.getAttribute("session");
         int userId = session.getUserId();
 
         if (financeRepository.findByUserId(userId) != null) {
