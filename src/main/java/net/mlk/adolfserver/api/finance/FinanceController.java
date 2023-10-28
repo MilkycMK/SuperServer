@@ -13,7 +13,6 @@ import net.mlk.adolfserver.data.user.session.Session;
 import net.mlk.adolfserver.errors.ResponseError;
 import net.mlk.jmson.JsonList;
 import net.mlk.jmson.utils.JsonConverter;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
