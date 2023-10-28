@@ -14,6 +14,7 @@ public class SessionService {
 
     public static void saveSession(Session session) {
         sessionRepository.save(session);
+        sessionRepository.flush();
     }
 
     public static SessionRepository getSessionRepository() {

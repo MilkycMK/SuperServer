@@ -14,6 +14,7 @@ public class TodoService {
 
     public static void saveTodo(TodoElement element) {
         todoRepository.save(element);
+        todoRepository.flush();
     }
 
     public static TodoRepository getTodoRepository() {

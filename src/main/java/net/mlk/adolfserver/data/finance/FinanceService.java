@@ -14,6 +14,7 @@ public class FinanceService {
 
     public static void save(FinanceData financeData) {
         financeRepository.save(financeData);
+        financeRepository.flush();
     }
 
     public static FinanceRepository getFinanceRepository() {

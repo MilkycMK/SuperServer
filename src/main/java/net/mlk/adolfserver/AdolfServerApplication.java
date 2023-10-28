@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @Controller
 @SpringBootApplication
@@ -18,6 +19,24 @@ public class AdolfServerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AdolfServerApplication.class, args);
+    }
+
+    public static boolean compareTimeDateFormat(String inputValue) {
+        try {
+            AdolfServerApplication.TIMEDATE_FORMAT.parse(inputValue);
+            return true;
+        } catch (DateTimeParseException dtpe) {
+            return false;
+        }
+    }
+
+    public static boolean compareDateFormat(String inputValue) {
+        try {
+            AdolfServerApplication.DATE_FORMAT.parse(inputValue);
+            return true;
+        } catch (DateTimeParseException dtpe) {
+            return false;
+        }
     }
 
     @RequestMapping(path = {"", "/"})

@@ -20,7 +20,6 @@ public class User {
         this.name = name.toLowerCase();
         this.password = password;
         UserService.saveUser(this);
-        UserService.getUserRepository().flush();
     }
 
     public String getName() {

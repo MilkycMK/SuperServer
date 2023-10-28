@@ -37,15 +37,17 @@ CREATE TABLE IF NOT EXISTS finance (
     user_id INTEGER NOT NULL,
     salary DOUBLE NOT NULL,
     remains DOUBLE NOT NULL,
-    creation_time DATETIME NOT NULL
+    creation_date DATE NOT NULL,
+    salary_date DATE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS finance_archive (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
     user_id INTEGER NOT NULL,
-    finance_id INTEGER NOT NULL,
+    salary DOUBLE NOT NULL,
     spent DOUBLE NOT NULL,
     remains DOUBLE NOT NULL,
     description LONGTEXT,
-    creation_time DATETIME NOT NULL
+    creation_date DATE NOT NULL,
+    salary_date DATE NOT NULL
 );

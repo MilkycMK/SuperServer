@@ -12,7 +12,12 @@ public class FinanceArchiveService {
         FinanceArchiveService.financeArchiveRepository = financeArchiveRepository;
     }
 
-    public FinanceArchiveRepository getFinanceArchiveRepository() {
+    public static void save(FinanceArchiveData financeArchiveService) {
+        financeArchiveRepository.save(financeArchiveService);
+        financeArchiveRepository.flush();
+    }
+
+    public static FinanceArchiveRepository getFinanceArchiveRepository() {
         return financeArchiveRepository;
     }
 }

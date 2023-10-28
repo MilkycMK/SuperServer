@@ -14,6 +14,7 @@ public class UserService {
 
     public static void saveUser(User user) {
         userRepository.save(user);
+        userRepository.flush();
     }
 
     public static UserRepository getUserRepository() {

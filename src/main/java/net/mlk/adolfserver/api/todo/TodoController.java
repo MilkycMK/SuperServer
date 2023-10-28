@@ -39,7 +39,7 @@ public class TodoController {
 
         if (header == null || header.isEmpty()) {
             return new ResponseEntity<>(new ResponseError("Заголовок не может быть пустым.").toString(), HttpStatus.BAD_REQUEST);
-        } else if (taskTime == null || !compareTimeDateFormat(taskTime)) {
+        } else if (taskTime == null || !AdolfServerApplication.compareTimeDateFormat(taskTime)) {
             return new ResponseEntity<>(new ResponseError("Неверный формат времени.").toString(), HttpStatus.BAD_REQUEST);
         } else if (files != null) {
             if (files.length > 5) {
@@ -65,7 +65,7 @@ public class TodoController {
         if (date == null) {
             elements = todoRepository.findAllDatesByUserId(userId).parseTypes(false);
         } else {
-            if (!compareDateFormat(date)) {
+            if (!AdolfServerApplication.compareDateFormat(date)) {
                 return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
             }
             List<TodoElement> raw = todoRepository.findAllByUserIdAndTaskTime(userId, LocalDate.parse(date));
@@ -92,7 +92,6 @@ public class TodoController {
         if (element == null) {
             return new ResponseEntity<>(new ResponseError("Записи не существует.").toString(), HttpStatus.BAD_REQUEST);
         }
-
         if (header != null) {
             if (header.isEmpty()) {
                 return new ResponseEntity<>(new ResponseError("Заголовок не может быть пустым.").toString(), HttpStatus.BAD_REQUEST);
@@ -136,24 +135,6 @@ public class TodoController {
         } else {
             element.deleteFiles(files);
             return new ResponseEntity<>(HttpStatus.OK);
-        }
-    }
-
-    private static boolean compareTimeDateFormat(String inputValue) {
-        try {
-            AdolfServerApplication.TIMEDATE_FORMAT.parse(inputValue);
-            return true;
-        } catch (DateTimeParseException dtpe) {
-            return false;
-        }
-    }
-
-    private static boolean compareDateFormat(String inputValue) {
-        try {
-            AdolfServerApplication.DATE_FORMAT.parse(inputValue);
-            return true;
-        } catch (DateTimeParseException dtpe) {
-            return false;
         }
     }
 
