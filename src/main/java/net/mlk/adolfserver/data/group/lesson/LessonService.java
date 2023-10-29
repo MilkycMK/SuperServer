@@ -39,5 +39,6 @@ public class LessonService {
 
     public static void save(Lesson lesson) {
         lessonRepository.save(lesson);
+        lessonRepository.flush();
     }
 }

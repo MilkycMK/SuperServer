@@ -31,7 +31,7 @@ public class LessonController {
         int groupId = AdolfUtils.tryParseInteger(gId);
 
         ResponseEntity<ResponseError> validate;
-        if ((validate = validateLessonValues(name, groupId, hours)) != null) {
+        if ((validate = validateLessonValues(name, groupId, userId, hours)) != null) {
             return validate;
         }
 
@@ -48,13 +48,14 @@ public class LessonController {
                                                       @RequestParam String date,
                                                       @RequestParam(required = false) String topic,
                                                       @RequestAttribute Session session) {
+        int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
         int lessonId = AdolfUtils.tryParseInteger(lId);
         Lesson lesson;
 
         ResponseEntity<ResponseError> validate = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         if ((lesson = LessonService.findById(lessonId)) == null ||
-                (validate = validateLessonHistoryValues(groupId, date, topic)) != null) {
+                (validate = validateLessonHistoryValues(groupId, userId, date, topic)) != null) {
             return validate;
         } else if (lesson.getHours() == lesson.getPassedHours()) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -72,11 +73,11 @@ public class LessonController {
     @GetMapping(path = {"/groups/{gId}/lessons", "/groups/{gId}/lessons/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getLessons(@PathVariable String gId,
-                                                    @RequestAttribute Session session) {
+                                             @RequestAttribute Session session) {
         int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
 
-        if (GroupService.findById(groupId) == null) {
+        if (GroupService.findByIdAndUserId(groupId, userId) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(LessonService.findByGroupId(groupId).toString(), HttpStatus.OK);
@@ -91,7 +92,7 @@ public class LessonController {
         int groupId = AdolfUtils.tryParseInteger(gId);
         int lessonId = AdolfUtils.tryParseInteger(aId);
 
-        if (GroupService.findById(groupId) == null || LessonService.findById(lessonId) == null) {
+        if (GroupService.findByIdAndUserId(groupId, userId) == null || LessonService.findById(lessonId) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(LessonHistoryService.findAllJsonByLessonId(lessonId).toString(), HttpStatus.OK);
@@ -109,6 +110,7 @@ public class LessonController {
                                                              @RequestParam String date,
                                                              @RequestParam String topic,
                                                              @RequestAttribute Session session) {
+        int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
         int lessonId = AdolfUtils.tryParseInteger(lId);
         int historyId = AdolfUtils.tryParseInteger(aId);
@@ -117,7 +119,7 @@ public class LessonController {
         ResponseEntity<ResponseError> validate = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         if (LessonService.findById(lessonId) == null ||
                 (lessonHistory = LessonHistoryService.findById(historyId)) == null ||
-                (validate = validateLessonHistoryValues(groupId, date, topic)) != null) {
+                (validate = validateLessonHistoryValues(groupId, userId, date, topic)) != null) {
             return validate;
         }
         lessonHistory.setDate(LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT));
@@ -143,7 +145,7 @@ public class LessonController {
 
         ResponseEntity<ResponseError> validate = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         if ((lesson = LessonService.findById(lessonId)) == null ||
-                (validate = validateLessonValues(name, groupId, hours)) != null) {
+                (validate = validateLessonValues(name, groupId, userId, hours)) != null) {
             return validate;
         }
 
@@ -166,7 +168,7 @@ public class LessonController {
         LessonHistory lessonHistory;
         Lesson lesson;
 
-        if (GroupService.findById(groupId) == null || (lesson = LessonService.findById(lessonId)) == null
+        if (GroupService.findByIdAndUserId(groupId, userId) == null || (lesson = LessonService.findById(lessonId)) == null
                 || (lessonHistory = LessonHistoryService.findById(historyLessonId)) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -186,15 +188,15 @@ public class LessonController {
         int lessonId = AdolfUtils.tryParseInteger(lId);
         Lesson lesson;
 
-        if (GroupService.findById(groupId) == null || (lesson = LessonService.findById(lessonId)) == null) {
+        if (GroupService.findByIdAndUserId(groupId, userId) == null || (lesson = LessonService.findById(lessonId)) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         LessonService.delete(lesson);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private static ResponseEntity<ResponseError> validateLessonValues(String name, int groupId, int hours) {
-        if (GroupService.findById(groupId) == null) {
+    private static ResponseEntity<ResponseError> validateLessonValues(String name, int groupId, int userId, int hours) {
+        if (GroupService.findByIdAndUserId(groupId, userId) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else if (name.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Lesson name can't be empty."), HttpStatus.BAD_REQUEST);
@@ -208,8 +210,8 @@ public class LessonController {
         return null;
     }
 
-    private static ResponseEntity<ResponseError> validateLessonHistoryValues(int groupId, String date, String topic) {
-        if (GroupService.findById(groupId) == null) {
+    private static ResponseEntity<ResponseError> validateLessonHistoryValues(int groupId, int userId, String date, String topic) {
+        if (GroupService.findByIdAndUserId(groupId, userId) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else if (!AdolfUtils.compareDateFormat(date)) {
             return new ResponseEntity<>(new ResponseError("Wrong date format."), HttpStatus.BAD_REQUEST);

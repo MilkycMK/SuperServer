@@ -27,8 +27,8 @@ public class GroupService {
         return groupRepository.findByUserIdAndNameIgnoreCase(userId, group);
     }
 
-    public static Group findById(int id) {
-        return groupRepository.findById(id);
+    public static Group findByIdAndUserId(int id, int userId) {
+        return groupRepository.findByIdAndUserId(id, userId);
     }
 
     public static List<Json> findAllByUserId(int id) {

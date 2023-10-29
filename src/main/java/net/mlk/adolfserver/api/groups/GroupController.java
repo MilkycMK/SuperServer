@@ -50,7 +50,7 @@ public class GroupController {
         int groupId = AdolfUtils.tryParseInteger(gId);
         Group group;
 
-        if ((group = GroupService.findById(groupId)) == null) {
+        if ((group = GroupService.findByIdAndUserId(groupId, userId)) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else if (groupName.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
@@ -69,12 +69,12 @@ public class GroupController {
 
     @DeleteMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteGroup(@PathVariable String gId,
-                                         @RequestAttribute Session session) {
+                                                     @RequestAttribute Session session) {
         int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
         Group group;
 
-        if ((group = GroupService.findById(groupId)) == null) {
+        if ((group = GroupService.findByIdAndUserId(groupId, userId)) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         GroupService.delete(group);
