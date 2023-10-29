@@ -16,19 +16,19 @@ import org.springframework.web.bind.annotation.*;
 public class GroupController {
 
     @PostMapping(path = {"/groups", "/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseError> createGroup(@RequestParam String group,
+    public ResponseEntity<ResponseError> createGroup(@RequestParam String name,
                                          @RequestAttribute Session session) {
         int userId = session.getUserId();
 
-        if (group.isBlank()) {
+        if (name.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
-        } else if (group.length() > 32) {
+        } else if (name.length() > 32) {
             return new ResponseEntity<>(new ResponseError("Group name size must be <= 32"), HttpStatus.BAD_REQUEST);
-        } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, group) != null) {
+        } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, name) != null) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
-        Group createdGroup = new Group(userId, group);
+        Group createdGroup = new Group(userId, name);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", "/groups/" + createdGroup.getId());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
@@ -53,7 +53,7 @@ public class GroupController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else if (groupName.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
-        } else if (group.getGroupName().equalsIgnoreCase(groupName)) {
+        } else if (group.getName().equalsIgnoreCase(groupName)) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, groupName) != null) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);

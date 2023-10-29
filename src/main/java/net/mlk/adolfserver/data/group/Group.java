@@ -14,22 +14,22 @@ public class Group implements JsonConvertible {
     @Column(name = "user_id")
     @JsonIgnore
     private int userId;
-    @Column(name = "group_name")
-    @JsonField(key = "group_name")
-    private String groupName;
+    @Column(name = "name")
+    @JsonField(key = "name")
+    private String name;
 
     protected Group() {
 
     }
 
-    public Group(int userId, String groupName) {
+    public Group(int userId, String name) {
         this.userId = userId;
-        this.groupName = groupName;
+        this.name = name;
         GroupService.save(this);
     }
 
-    public void setName(String groupName) {
-        this.groupName = groupName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getId() {
@@ -40,7 +40,7 @@ public class Group implements JsonConvertible {
         return this.userId;
     }
 
-    public String getGroupName() {
-        return this.groupName;
+    public String getName() {
+        return this.name;
     }
 }
