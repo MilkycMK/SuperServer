@@ -23,7 +23,8 @@ import java.time.LocalDate;
 @Controller
 public class LessonController {
 
-    @PostMapping(path = {"/groups/{gId}/lessons", "/groups/{gId}/lessons/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = {"/groups/{gId}/lessons", "/groups/{gId}/lessons/"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createLesson(@PathVariable String gId,
                                           @RequestParam String name,
                                           @RequestParam int hours,
@@ -129,7 +130,8 @@ public class LessonController {
 
     @PatchMapping(path = {"/groups/{gId}/lessons/{lId}", "/groups/{gId}/lessons/{lId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/groups/{gId}/lessons/{lId}", "/groups/{gId}/lessons/{lId}/"}, method = RequestMethod.POST,
+    @RequestMapping(path = {"/groups/{gId}/lessons/{lId}", "/groups/{gId}/lessons/{lId}/"},
+            method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> updateLesson(@PathVariable String gId,
                                                       @PathVariable String lId,
