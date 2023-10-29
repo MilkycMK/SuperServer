@@ -38,6 +38,7 @@ public class UserFilesService {
 
     public static void save(UserFile userFile) {
         userFilesRepository.save(userFile);
+        userFilesRepository.flush();
     }
 
     public static void delete(UserFile userFile) {
