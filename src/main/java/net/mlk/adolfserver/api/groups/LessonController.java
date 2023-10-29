@@ -1,8 +1,6 @@
 package net.mlk.adolfserver.api.groups;
 
-import jakarta.persistence.Column;
 import net.mlk.adolfserver.AdolfServerApplication;
-import net.mlk.adolfserver.data.group.Group;
 import net.mlk.adolfserver.data.group.GroupService;
 import net.mlk.adolfserver.data.group.lesson.Lesson;
 import net.mlk.adolfserver.data.group.lesson.LessonService;
