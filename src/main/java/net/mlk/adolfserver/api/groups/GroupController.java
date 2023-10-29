@@ -22,6 +22,8 @@ public class GroupController {
 
         if (group.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
+        } else if (group.length() > 32) {
+            return new ResponseEntity<>(new ResponseError("Group name size must be < 32"), HttpStatus.BAD_REQUEST);
         } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, group) != null) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
