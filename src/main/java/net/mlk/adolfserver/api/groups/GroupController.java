@@ -1,4 +1,4 @@
-package net.mlk.adolfserver.api.journal;
+package net.mlk.adolfserver.api.groups;
 
 import net.mlk.adolfserver.data.group.Group;
 import net.mlk.adolfserver.data.group.GroupService;
@@ -38,6 +38,7 @@ public class GroupController {
         return new ResponseEntity<>(GroupService.findByUserId(userId).toString(), HttpStatus.OK);
     }
 
+    @PatchMapping(path = {"/groups/gId", "/groups/gId"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, method = RequestMethod.POST, headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> updateGroup(@PathVariable String gId,
                                          @RequestParam(value = "group") String groupName,
