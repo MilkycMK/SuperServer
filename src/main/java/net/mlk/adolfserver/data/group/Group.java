@@ -28,6 +28,10 @@ public class Group implements JsonConvertible {
         GroupService.save(this);
     }
 
+    public void setName(String groupName) {
+        this.groupName = groupName;
+    }
+
     public int getId() {
         return this.id;
     }

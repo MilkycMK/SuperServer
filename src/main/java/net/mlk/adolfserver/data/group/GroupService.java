@@ -1,7 +1,13 @@
 package net.mlk.adolfserver.data.group;
 
+import net.mlk.jmson.Json;
+import net.mlk.jmson.JsonList;
+import net.mlk.jmson.utils.JsonConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service("GroupService")
 public class GroupService {
@@ -15,6 +21,25 @@ public class GroupService {
     public static void save(Group group) {
         groupRepository.save(group);
         groupRepository.flush();
+    }
+
+    public static Group findByUserIdAndGroupNameIgnoreCase(int userId, String group) {
+        return groupRepository.findByUserIdAndGroupNameIgnoreCase(userId, group);
+    }
+
+    public static Group findById(int id) {
+        return groupRepository.findById(id);
+    }
+
+    public static List<Json> findByUserId(int id) {
+        List<Group> groups = groupRepository.findByUserId(id);
+        return groups.stream()
+                .map(JsonConverter::convertToJson)
+                .collect(Collectors.toList());
+    }
+
+    public static void delete(Group group) {
+        groupRepository.delete(group);
     }
 
     public static GroupRepository getGroupRepository() {

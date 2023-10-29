@@ -1,11 +1,11 @@
 package net.mlk.adolfserver.api.journal;
 
 import net.mlk.adolfserver.data.group.Group;
-import net.mlk.adolfserver.data.group.GroupRepository;
 import net.mlk.adolfserver.data.group.GroupService;
 import net.mlk.adolfserver.data.user.session.Session;
 import net.mlk.adolfserver.errors.ResponseError;
 import net.mlk.adolfserver.utils.AdolfUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,34 +15,63 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class GroupController {
 
-    @PostMapping(path = {"/groups", "/groups/"})
-    public HttpStatus createGroup(@RequestParam String group,
-                                              @RequestAttribute Session session) {
-        GroupRepository groupRepository = GroupService.getGroupRepository();
+    @PostMapping(path = {"/groups", "/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> createGroup(@RequestParam String group,
+                                         @RequestAttribute Session session) {
         int userId = session.getUserId();
 
-        if (groupRepository.findByUserIdAndGroupNameIgnoreCase(userId, group) != null) {
-            return new ResponseEntity<>(new ResponseError("Группа уже существует.").toString(), HttpStatus.CONFLICT);
-        } else if (group.isBlank()) {
-            return new ResponseEntity<>(new ResponseError("Название группы не может быть пустым.").toString(), HttpStatus.BAD_REQUEST);
+        if (group.isBlank()) {
+            return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
+        } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, group) != null) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
         Group createdGroup = new Group(userId, group);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "/groups/" + createdGroup.getId());
+        return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @DeleteMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteGroup(@PathVariable String gId,
-                                              @RequestAttribute Session session) {
-        GroupRepository groupRepository = GroupService.getGroupRepository();
+    @GetMapping(path = {"/groups", "/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getGroups(@RequestAttribute Session session) {
+        int userId = session.getUserId();
+        return new ResponseEntity<>(GroupService.findByUserId(userId).toString(), HttpStatus.OK);
+    }
+
+    @RequestMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, method = RequestMethod.POST, headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> updateGroup(@PathVariable String gId,
+                                         @RequestParam(value = "group") String groupName,
+                                         @RequestAttribute Session session) {
         int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
         Group group;
 
-        if ((group = groupRepository.findById(groupId)) == null) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if ((group = GroupService.findById(groupId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else if (groupName.isBlank()) {
+            return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
+        } else if (group.getGroupName().equalsIgnoreCase(groupName)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, groupName) != null) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
+        group.setName(groupName);
+        GroupService.save(group);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> deleteGroup(@PathVariable String gId,
+                                         @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int groupId = AdolfUtils.tryParseInteger(gId);
+        Group group;
+
+        if ((group = GroupService.findById(groupId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        GroupService.delete(group);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
