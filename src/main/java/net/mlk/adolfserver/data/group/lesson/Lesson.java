@@ -46,6 +46,10 @@ public class Lesson implements JsonConvertible {
         this.passedHours += 2;
     }
 
+    public void removeLessonHours() {
+        this.passedHours += 2;
+    }
+
     public int getGroupId() {
         return this.groupId;
     }

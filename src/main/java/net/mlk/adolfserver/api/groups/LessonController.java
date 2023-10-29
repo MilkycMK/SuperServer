@@ -23,7 +23,7 @@ import java.time.LocalDate;
 @Controller
 public class LessonController {
 
-    @PostMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = {"/groups/{gId}/lessons", "/groups/{gId}/lessons/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createLesson(@PathVariable String gId,
                                           @RequestParam String name,
                                           @RequestParam int hours,
@@ -42,7 +42,7 @@ public class LessonController {
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @PostMapping(path = {"/groups/{gId}/lessons/{lId}", "/groups/{gId}/lessons/{lId}/"},
+    @PostMapping(path = {"/groups/{gId}/lessons/{lId}/history", "/groups/{gId}/lessons/{lId}/history/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createLessonHistory(@PathVariable String gId,
                                                       @PathVariable String lId,
@@ -164,11 +164,14 @@ public class LessonController {
         int lessonId = AdolfUtils.tryParseInteger(lId);
         int historyLessonId = AdolfUtils.tryParseInteger(aId);
         LessonHistory lessonHistory;
+        Lesson lesson;
 
-        if (GroupService.findById(groupId) == null || LessonService.findById(lessonId) == null
+        if (GroupService.findById(groupId) == null || (lesson = LessonService.findById(lessonId)) == null
                 || (lessonHistory = LessonHistoryService.findById(historyLessonId)) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        lesson.removeLessonHours();
+        LessonService.save(lesson);
         LessonHistoryService.delete(lessonHistory);
         return new ResponseEntity<>(HttpStatus.OK);
     }

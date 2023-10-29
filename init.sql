@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS lessons (
     name VARCHAR(64) NOT NULL,
     hours INTEGER NOT NULL,
     passed_hours INTEGER NOT NULL
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS lessons_history (
@@ -33,5 +34,6 @@ CREATE TABLE IF NOT EXISTS lessons_history (
     lesson_id INTEGER NOT NULL,
     number INTEGER NOT NULL,
     date DATE NOT NULL,
-    topic VARCHAR(255)
+    topic VARCHAR(255),
+    FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
 );
