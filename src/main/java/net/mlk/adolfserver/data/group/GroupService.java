@@ -23,16 +23,16 @@ public class GroupService {
         groupRepository.flush();
     }
 
-    public static Group findByUserIdAndGroupNameIgnoreCase(int userId, String group) {
-        return groupRepository.findByUserIdAndGroupNameIgnoreCase(userId, group);
+    public static Group findByUserIdAndNameIgnoreCase(int userId, String group) {
+        return groupRepository.findByUserIdAndNameIgnoreCase(userId, group);
     }
 
     public static Group findById(int id) {
         return groupRepository.findById(id);
     }
 
-    public static List<Json> findByUserId(int id) {
-        List<Group> groups = groupRepository.findByUserId(id);
+    public static List<Json> findAllByUserId(int id) {
+        List<Group> groups = groupRepository.findAllByUserId(id);
         return groups.stream()
                 .map(JsonConverter::convertToJson)
                 .collect(Collectors.toList());

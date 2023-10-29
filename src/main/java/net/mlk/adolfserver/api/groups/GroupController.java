@@ -24,7 +24,7 @@ public class GroupController {
             return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
         } else if (name.length() > 32) {
             return new ResponseEntity<>(new ResponseError("Group name size must be <= 32"), HttpStatus.BAD_REQUEST);
-        } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, name) != null) {
+        } else if (GroupService.findByUserIdAndNameIgnoreCase(userId, name) != null) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
@@ -37,11 +37,12 @@ public class GroupController {
     @GetMapping(path = {"/groups", "/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getGroups(@RequestAttribute Session session) {
         int userId = session.getUserId();
-        return new ResponseEntity<>(GroupService.findByUserId(userId).toString(), HttpStatus.OK);
+        return new ResponseEntity<>(GroupService.findAllByUserId(userId).toString(), HttpStatus.OK);
     }
 
-    @PatchMapping(path = {"/groups/gId", "/groups/gId"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, method = RequestMethod.POST, headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(path = {"/groups/{gId}", "/groups/{gId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, method = RequestMethod.POST,
+            headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> updateGroup(@PathVariable String gId,
                                          @RequestParam(value = "group") String groupName,
                                          @RequestAttribute Session session) {
@@ -53,9 +54,11 @@ public class GroupController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else if (groupName.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Group name can't be empty."), HttpStatus.BAD_REQUEST);
+        } else if (groupName.length() > 32) {
+            return new ResponseEntity<>(new ResponseError("Group name size must be <= 32"), HttpStatus.BAD_REQUEST);
         } else if (group.getName().equalsIgnoreCase(groupName)) {
             return new ResponseEntity<>(HttpStatus.OK);
-        } else if (GroupService.findByUserIdAndGroupNameIgnoreCase(userId, groupName) != null) {
+        } else if (GroupService.findByUserIdAndNameIgnoreCase(userId, groupName) != null) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 

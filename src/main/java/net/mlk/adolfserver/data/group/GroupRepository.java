@@ -7,7 +7,7 @@ import java.util.List;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Integer> {
-    Group findByUserIdAndGroupNameIgnoreCase(int userId, String group);
+    Group findByUserIdAndNameIgnoreCase(int userId, String group);
     Group findById(int id);
-    List<Group> findByUserId(int id);
+    List<Group> findAllByUserId(int id);
 }

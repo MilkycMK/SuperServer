@@ -21,22 +21,4 @@ public class AdolfServerApplication {
         SpringApplication.run(AdolfServerApplication.class, args);
     }
 
-    public static boolean compareTimeDateFormat(String inputValue) {
-        try {
-            AdolfServerApplication.TIMEDATE_FORMAT.parse(inputValue);
-            return true;
-        } catch (DateTimeParseException dtpe) {
-            return false;
-        }
-    }
-
-    public static boolean compareDateFormat(String inputValue) {
-        try {
-            AdolfServerApplication.DATE_FORMAT.parse(inputValue);
-            return true;
-        } catch (DateTimeParseException dtpe) {
-            return false;
-        }
-    }
-
 }
