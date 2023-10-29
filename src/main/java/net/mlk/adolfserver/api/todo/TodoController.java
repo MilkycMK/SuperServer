@@ -43,6 +43,8 @@ public class TodoController {
 
         if (topic.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Topic field can't be empty."), HttpStatus.BAD_REQUEST);
+        } else if (topic.length() > 128) {
+            return new ResponseEntity<>(new ResponseError("Max topic length = 128"), HttpStatus.BAD_REQUEST);
         } else if (!AdolfUtils.compareTimeDateFormat(taskTime)) {
             return new ResponseEntity<>(new ResponseError("Wrong date format."), HttpStatus.BAD_REQUEST);
         } else if (files != null) {
@@ -138,6 +140,8 @@ public class TodoController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else if (topic.isBlank()) {
             return new ResponseEntity<>(new ResponseError("Topic field can't be empty."), HttpStatus.BAD_REQUEST);
+        } else if (topic.length() > 128) {
+            return new ResponseEntity<>(new ResponseError("Max topic length = 128"), HttpStatus.BAD_REQUEST);
         } else if (!AdolfUtils.compareTimeDateFormat(taskTime)) {
             return new ResponseEntity<>(new ResponseError("Wrong date format."), HttpStatus.BAD_REQUEST);
         }
@@ -168,7 +172,7 @@ public class TodoController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/todo/{tId}", "/todo/{tId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = {"/todo/{tId}", "/todo/{tId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteTodo(@PathVariable String tId,
                                                     @RequestAttribute Session session) {
         int userId = session.getUserId();
