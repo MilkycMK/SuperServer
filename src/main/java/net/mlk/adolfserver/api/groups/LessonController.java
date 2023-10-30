@@ -83,14 +83,14 @@ public class LessonController {
         return new ResponseEntity<>(LessonService.findByGroupId(groupId).toString(), HttpStatus.OK);
     }
 
-    @GetMapping(path = {"/groups/{gId}/lessons/{aId}/history", "/groups/{gId}/lessons/{aId}/history/"},
+    @GetMapping(path = {"/groups/{gId}/lessons/{lId}/history", "/groups/{gId}/lessons/{lId}/history/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getLessonHistory(@PathVariable String gId,
-                                                   @PathVariable String aId,
+                                                   @PathVariable String lId,
                                                    @RequestAttribute Session session) {
         int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
-        int lessonId = AdolfUtils.tryParseInteger(aId);
+        int lessonId = AdolfUtils.tryParseInteger(lId);
 
         if (GroupService.findByIdAndUserId(groupId, userId) == null || LessonService.findById(lessonId) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -108,7 +108,7 @@ public class LessonController {
                                                              @PathVariable String lId,
                                                              @PathVariable String aId,
                                                              @RequestParam String date,
-                                                             @RequestParam String topic,
+                                                             @RequestParam(required = false) String topic,
                                                              @RequestAttribute Session session) {
         int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
