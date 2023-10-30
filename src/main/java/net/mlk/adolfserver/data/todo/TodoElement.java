@@ -3,7 +3,6 @@ package net.mlk.adolfserver.data.todo;
 import jakarta.persistence.*;
 import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.todo.files.UserFile;
-import net.mlk.adolfserver.data.todo.files.UserFilesService;
 import net.mlk.jmson.annotations.JsonField;
 import net.mlk.jmson.annotations.JsonIgnore;
 import net.mlk.jmson.utils.JsonConvertible;
@@ -31,6 +30,9 @@ public class TodoElement implements JsonConvertible {
     @Column(name = "task_time")
     @JsonField(key = "task_time")
     private LocalDateTime taskTime;
+    @OneToMany
+    @JoinColumn(insertable = false, updatable = false, name = "todo_id", referencedColumnName = "id")
+    private List<UserFile> files = new ArrayList<>();
 
     protected TodoElement() {
 

@@ -8,9 +8,7 @@ import net.mlk.adolfserver.data.todo.files.UserFilesService;
 import net.mlk.adolfserver.data.user.session.Session;
 import net.mlk.adolfserver.errors.ResponseError;
 import net.mlk.adolfserver.utils.AdolfUtils;
-import net.mlk.jmson.JsonList;
-import net.mlk.jmson.utils.JsonConverter;
-import net.mlk.jmson.utils.JsonConvertible;
+import net.mlk.jmson.Json;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -85,13 +83,13 @@ public class TodoController {
     }
 
     @GetMapping(path = {"/todo", "/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getTodo(@RequestAttribute Session session) {
+    public ResponseEntity<List<Json>> getTodo(@RequestAttribute Session session) {
         int userId = session.getUserId();
-        return new ResponseEntity<>(TodoService.findAllJsonsByUserId(userId).toString(), HttpStatus.OK);
+        return new ResponseEntity<>(TodoService.findAllJsonsByUserId(userId), HttpStatus.OK);
     }
 
     @GetMapping(path = {"/todo/{tId}/files", "/todo/{tId}/files/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getTodo(@PathVariable String tId,
+    public ResponseEntity<List<Json>> getTodo(@PathVariable String tId,
                                           @RequestAttribute Session session) {
         int userId = session.getUserId();
         int todoId = AdolfUtils.tryParseInteger(tId);
@@ -100,7 +98,7 @@ public class TodoController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<>(UserFilesService.findAllJsonByTodoId(todoId).toString(), HttpStatus.OK);
+        return new ResponseEntity<>(UserFilesService.findAllJsonByTodoId(todoId), HttpStatus.OK);
     }
 
     @GetMapping(path = {"/todo/{tId}/files/{fId}", "/todo/{tId}/files/{fId}/"})
