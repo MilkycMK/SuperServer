@@ -108,7 +108,7 @@ public class LessonController {
                                                              @PathVariable String lId,
                                                              @PathVariable String aId,
                                                              @RequestParam String date,
-                                                             @RequestParam String topic,
+                                                             @RequestParam(required = false) String topic,
                                                              @RequestAttribute Session session) {
         int userId = session.getUserId();
         int groupId = AdolfUtils.tryParseInteger(gId);
