@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    user_id VARCHAR(32) NOT NULL,
+    user_id INTEGER NOT NULL,
     token VARCHAR(255) NOT NULL,
     mask VARCHAR(4) NOT NULL,
     creation_time DATETIME NOT NULL,
@@ -15,10 +15,11 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 -- TODO
+
 CREATE TABLE IF NOT EXISTS todo (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    user_id VARCHAR(32) NOT NULL,
-    header LONGTEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    topic VARCHAR(128) NOT NULL,
     description LONGTEXT,
     creation_time DATETIME NOT NULL,
     task_time DATETIME NOT NULL
@@ -26,12 +27,13 @@ CREATE TABLE IF NOT EXISTS todo (
 
 CREATE TABLE IF NOT EXISTS files (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    user_id VARCHAR(32) NOT NULL,
-    file_name LONGTEXT NOT NULL,
-    task_id INTEGER NOT NULL
+    todo_id INTEGER NOT NULL,
+    name LONGTEXT NOT NULL,
+    FOREIGN KEY (todo_id) REFERENCES todo (id) ON DELETE CASCADE
 );
 
 -- FINANCE
+
 CREATE TABLE IF NOT EXISTS finance (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
     user_id INTEGER NOT NULL,
@@ -41,13 +43,41 @@ CREATE TABLE IF NOT EXISTS finance (
     salary_date DATE NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS finance_archive (
+CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    finance_id INTEGER NOT NULL,
+    type VARCHAR(32) NOT NULL,
+    value DOUBLE NOT NULL,
+    salary DOUBLE NOT NULL,
+    remains DOUBLE NOT NULL,
+    description LONGTEXT NOT NULL,
+    creation_date DATE NOT NULL,
+    salary_date DATE NOT NULL,
+    FOREIGN KEY (finance_id) REFERENCES finance (id) ON DELETE CASCADE
+);
+
+-- GROUPS
+
+CREATE TABLE IF NOT EXISTS `groups` (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
     user_id INTEGER NOT NULL,
-    salary DOUBLE NOT NULL,
-    spent DOUBLE NOT NULL,
-    remains DOUBLE NOT NULL,
-    description LONGTEXT,
-    creation_date DATE NOT NULL,
-    salary_date DATE NOT NULL
+    name VARCHAR(32) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS lessons (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    group_id INTEGER NOT NULL,
+    name VARCHAR(64) NOT NULL,
+    hours INTEGER NOT NULL,
+    passed_hours INTEGER NOT NULL
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS lessons_history (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    lesson_id INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    date DATE NOT NULL,
+    topic VARCHAR(255),
+    FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
 );

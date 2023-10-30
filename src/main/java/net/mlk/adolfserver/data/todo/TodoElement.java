@@ -3,8 +3,9 @@ package net.mlk.adolfserver.data.todo;
 import jakarta.persistence.*;
 import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.todo.files.UserFile;
-import net.mlk.adolfserver.data.todo.files.UserFileService;
+import net.mlk.adolfserver.data.todo.files.UserFilesService;
 import net.mlk.jmson.annotations.JsonField;
+import net.mlk.jmson.annotations.JsonIgnore;
 import net.mlk.jmson.utils.JsonConvertible;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,16 +14,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
 @Table(name = "todo")
+@Entity
 public class TodoElement implements JsonConvertible {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "user_id")
-    @JsonField(key = "user_id")
+    @JsonIgnore
     private int userId;
-    private String header;
+    private String topic;
     private String description;
     @Column(name = "creation_time")
     @JsonField(key = "creation_time")
@@ -30,72 +31,46 @@ public class TodoElement implements JsonConvertible {
     @Column(name = "task_time")
     @JsonField(key = "task_time")
     private LocalDateTime taskTime;
-    @OneToMany
-    @JoinColumns({
-            @JoinColumn(updatable=false,insertable=false, name="task_id", referencedColumnName="id"),
-            @JoinColumn(updatable=false,insertable=false, name="user_id", referencedColumnName="user_id"),
-        })
-    @JsonField(key = "user_files")
-    public List<UserFile> userFiles = new ArrayList<>();
 
     protected TodoElement() {
 
     }
 
-    public TodoElement(int userId, String header, LocalDateTime creationTime) {
-        this(userId, header, null, creationTime);
-    }
-
-    public TodoElement(int userId, String header, String description, LocalDateTime creationTime) {
-        this(userId, header, description, null, creationTime);
-    }
-
-    public TodoElement(int userId, String header, String description, MultipartFile[] files, LocalDateTime creationTime) {
-        this(userId, header, description, files, creationTime, null);
-    }
-
-    public TodoElement(int userId, String header, String description, MultipartFile[] files, LocalDateTime creationTime, LocalDateTime taskTime) {
+    public TodoElement(int userId, String topic, String description, MultipartFile[] files,
+                       LocalDateTime creationTime, LocalDateTime taskTime) {
         this.userId = userId;
-        this.header = header;
+        this.topic = topic;
         this.description = description;
         this.creationTime = creationTime;
         this.taskTime = taskTime;
-        TodoService.saveTodo(this);
+        TodoService.save(this);
         if (files != null) {
             this.uploadFiles(files);
         }
     }
 
-    public void setHeader(String header) {
-        this.header = header;
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public void setTaskTime(LocalDateTime taskTime) {
+        this.taskTime = taskTime;
     }
 
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public void uploadFiles(MultipartFile[] files) {
-        for (MultipartFile file : files) {
-            if (file.getOriginalFilename() != null && !file.getOriginalFilename().isEmpty()) {
-                this.userFiles.add(new UserFile(this.userId, file, this.id));
-            }
-        }
-    }
-
-    public int getFilesCount() {
-        return this.userFiles.size();
-    }
-
     public int getId() {
         return this.id;
     }
 
-    public int getUserName() {
+    public int getUserId() {
         return this.userId;
     }
 
-    public String getHeader() {
-        return this.header;
+    public String getTopic() {
+        return this.topic;
     }
 
     public String getDescription() {
@@ -110,26 +85,19 @@ public class TodoElement implements JsonConvertible {
         return this.taskTime;
     }
 
-    public void deleteFiles() {
-        for (UserFile file : this.userFiles) {
-            UserFileService.getUserFileRepository().delete(file);
-        }
-        this.deleteDirectory(new File(String.format(AdolfServerApplication.FILES_PATH_TEMPLATE, this.userId, this.id)));
-    }
-
-    public void deleteFiles(List<String> files) {
-        for (String str : files) {
-            for (UserFile file : this.userFiles) {
-                String name = file.getFileName();
-                if (str.equals(name)) {
-                    UserFileService.getUserFileRepository().delete(file);
-                    File delFile = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.userId, this.id, file.getFileName()));
-                    if (delFile.exists()) {
-                        delFile.delete();
-                    }
-                }
+    public List<Integer> uploadFiles(MultipartFile[] files) {
+        List<Integer> filesId = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file.getOriginalFilename() != null && !file.getOriginalFilename().isEmpty()) {
+                UserFile newFile = new UserFile(this.id, file);
+                filesId.add(newFile.getId());
             }
         }
+        return filesId;
+    }
+
+    public void deleteLocalFiles() {
+        this.deleteDirectory(new File(String.format(AdolfServerApplication.FILES_PATH_TEMPLATE, this.id)));
     }
 
     private boolean deleteDirectory(File directoryToBeDeleted) {
@@ -141,5 +109,4 @@ public class TodoElement implements JsonConvertible {
         }
         return directoryToBeDeleted.delete();
     }
-
 }

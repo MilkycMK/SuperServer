@@ -1,22 +1,24 @@
-package net.mlk.adolfserver.data.finance.archive;
+package net.mlk.adolfserver.data.finance.history;
 
 import jakarta.persistence.*;
 import net.mlk.jmson.annotations.JsonField;
+import net.mlk.jmson.annotations.JsonIgnore;
 import net.mlk.jmson.utils.JsonConvertible;
 
 import java.time.LocalDate;
 
-@Table(name = "finance_archive")
+@Table(name = "transactions")
 @Entity
-public class FinanceArchiveData implements JsonConvertible {
+public class Transaction implements JsonConvertible {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "user_id")
-    @JsonField(key = "user_id")
-    private int userId;
+    @Column(name = "finance_id")
+    @JsonIgnore
+    private int financeId;
+    private String type;
     private double salary;
-    private double spent;
+    private double value;
     private double remains;
     private String description;
     @Column(name = "creation_date")
@@ -26,23 +28,25 @@ public class FinanceArchiveData implements JsonConvertible {
     @JsonField(key = "salary_date")
     private LocalDate salaryDate;
 
-    protected FinanceArchiveData() {
+    protected Transaction() {
 
     }
 
-    public FinanceArchiveData(int userId, double salary, double spent, double remains, String description,LocalDate creationDate, LocalDate salaryDate) {
-        this.userId = userId;
+    public Transaction(int financeId, String type, double salary, double spent, double added, double remains, String description,
+                       LocalDate creationDate, LocalDate salaryDate) {
+        this.financeId = financeId;
         this.salary = salary;
-        this.spent = spent;
+        this.type = type;
+        if (this.type.equalsIgnoreCase("add")) {
+            this.value = added;
+        } else {
+            this.value = spent;
+        }
         this.remains = remains;
         this.description = description;
         this.creationDate = creationDate;
         this.salaryDate = salaryDate;
-        FinanceArchiveService.save(this);
-    }
-
-    public void setSalaryDate(LocalDate salaryDate) {
-        this.salaryDate = salaryDate;
+        TransactionService.save(this);
     }
 
     public void setRemains(double remains) {
@@ -53,37 +57,37 @@ public class FinanceArchiveData implements JsonConvertible {
         this.salary = salary;
     }
 
-    public LocalDate getSalaryDate() {
-        return this.salaryDate;
-    }
-
-    public void spent(double spent) {
-        if (this.spent < spent) {
-            this.remains -= spent - this.spent;
-        } else {
-            this.remains += this.spent == spent ? 0 : this.spent - spent;
-        }
-        this.spent = spent;
+    public void setSalaryDate(LocalDate date) {
+        this.salaryDate = date;
     }
 
     public void setDescription(String description) {
         this.description = description;
     }
 
+    public void setType(String type, double value) {
+        this.type = type;
+        if (type.equalsIgnoreCase("add")) {
+            this.remains += value;
+        } else {
+            this.remains -= value;
+        }
+    }
+
     public int getId() {
         return this.id;
     }
 
-    public int getUserId() {
-        return this.userId;
+    public int getFinanceId() {
+        return this.financeId;
     }
 
     public double getSalary() {
         return this.salary;
     }
 
-    public double getSpent() {
-        return this.spent;
+    public double getValue() {
+        return this.value;
     }
 
     public double getRemains() {

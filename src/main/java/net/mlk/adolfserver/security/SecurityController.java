@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -26,31 +27,31 @@ public class SecurityController {
     private static final long TOKEN_DURATION = 2592000;
 
     @PostMapping(path = {"/signup", "/signup/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> signUp(@RequestParam("login") String name,
-                                         @RequestParam("password") String password) {
-        name = name.toLowerCase();
+    public ResponseEntity<String> signUp(@RequestParam String login,
+                                         @RequestParam String password) {
+        login = login.toLowerCase();
         UserRepository repository = UserService.getUserRepository();
-        if (!NAME_PATTERN.matcher(name).find() || name.length() < 4 || name.length() > 32) {
+        if (!NAME_PATTERN.matcher(login).find() || login.length() < 4 || login.length() > 32) {
             return new ResponseEntity<>(new ResponseError("Имя может содержать только A-Za-z0-9-_ и должно быть больше 4 символов, но не более 32.").toString(), HttpStatus.BAD_REQUEST);
-        } else if (repository.existsByName(name)) {
+        } else if (repository.existsByName(login)) {
             return new ResponseEntity<>(new ResponseError("Пользователь уже существует.").toString(), HttpStatus.CONFLICT);
         } else if (password.length() < 6) {
             return new ResponseEntity<>(new ResponseError("Минимальная длина пароля - 6 символов.").toString(), HttpStatus.BAD_REQUEST);
         }
 
-        User user = new User(name, SecurityUtils.sha512Encrypt(password));
-        Token token = new Token(name, user.getId(), true, TOKEN_DURATION);
+        User user = new User(login, SecurityUtils.sha512Encrypt(password));
+        Token token = new Token(login, user.getId(), true, TOKEN_DURATION);
         return new ResponseEntity<>(new UserEntity(token).toString(), HttpStatus.OK);
     }
 
     @PostMapping(path = {"/signin", "/signin/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> signIn(@RequestParam("login") String name,
-                                         @RequestParam("password") String password) {
+    public ResponseEntity<String> signIn(@RequestParam String login,
+                                         @RequestParam String password) {
         UserRepository repository = UserService.getUserRepository();
-        name = name.toLowerCase();
+        login = login.toLowerCase();
         password = SecurityUtils.sha512Encrypt(password);
 
-        User user = repository.findByName(name);
+        User user = repository.findByName(login);
 
         if (user == null) {
             return new ResponseEntity<>(new ResponseError("Пользователь не найден.").toString(), HttpStatus.UNAUTHORIZED);
@@ -58,14 +59,14 @@ public class SecurityController {
             return new ResponseEntity<>(new ResponseError("Неверный пароль.").toString(), HttpStatus.UNAUTHORIZED);
         }
 
-        Token token = new Token(name, user.getId(), true, TOKEN_DURATION);
+        Token token = new Token(login, user.getId(), true, TOKEN_DURATION);
         return new ResponseEntity<>(new UserEntity(token).toString(), HttpStatus.OK);
     }
 
     @RequestMapping(path = {"/logout", "/logout/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> logout(HttpServletRequest request) {
+    public ResponseEntity<String> logout(@RequestAttribute Session session,
+                                         HttpServletRequest request) {
         SessionRepository sessionRepository = SessionService.getSessionRepository();
-        Session session = (Session) request.getAttribute("session");
 
         sessionRepository.delete(session);
         return new ResponseEntity<>(HttpStatus.OK);

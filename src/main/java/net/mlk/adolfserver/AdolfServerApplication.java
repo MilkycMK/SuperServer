@@ -6,37 +6,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 @Controller
 @SpringBootApplication
 public class AdolfServerApplication {
     public static final int MAX_FILE_SIZE = 10;
-    public static final String FILE_PATH_TEMPLATE = "userFiles/%s/%s/%s";
-    public static final String FILES_PATH_TEMPLATE = "userFiles/%s/%s";
+    public static final String FILE_PATH_TEMPLATE = "userFiles/%s/%s";
+    public static final String FILES_PATH_TEMPLATE = "userFiles/%s";
     public static final DateTimeFormatter TIMEDATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static void main(String[] args) {
         SpringApplication.run(AdolfServerApplication.class, args);
-    }
-
-    public static boolean compareTimeDateFormat(String inputValue) {
-        try {
-            AdolfServerApplication.TIMEDATE_FORMAT.parse(inputValue);
-            return true;
-        } catch (DateTimeParseException dtpe) {
-            return false;
-        }
-    }
-
-    public static boolean compareDateFormat(String inputValue) {
-        try {
-            AdolfServerApplication.DATE_FORMAT.parse(inputValue);
-            return true;
-        } catch (DateTimeParseException dtpe) {
-            return false;
-        }
     }
 
 }

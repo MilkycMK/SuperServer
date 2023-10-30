@@ -2,7 +2,7 @@ package net.mlk.adolfserver.data.todo.files;
 
 import jakarta.persistence.*;
 import net.mlk.adolfserver.AdolfServerApplication;
-import net.mlk.jmson.annotations.JsonField;
+import net.mlk.jmson.annotations.JsonIgnore;
 import net.mlk.jmson.utils.JsonConvertible;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,35 +11,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-@Entity
 @Table(name = "files")
+@Entity
 public class UserFile implements JsonConvertible {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "user_id")
-    @JsonField(key = "user_id")
-    private int userId;
-    @Column(name = "file_name")
-    @JsonField(key = "file_name")
-    private String fileName;
-    @Column(name = "task_id")
-    @JsonField(key = "task_id")
-    private int taskId;
+    @Column(name = "todo_id")
+    @JsonIgnore
+    private int todoId;
+    private String name;
 
     protected UserFile() {
 
     }
 
-    public UserFile(int userId, MultipartFile file, int taskId) {
-        this.userId = userId;
-        this.fileName = file.getOriginalFilename();
-        this.taskId = taskId;
+    public UserFile(int todoId, MultipartFile file) {
+        this.todoId = todoId;
+        this.name = file.getOriginalFilename();
         this.createFile(file);
-        UserFile f = UserFileService.getUserFileRepository().findByUserIdAndTaskIdAndFileName(userId, taskId, fileName);
+        UserFile f = UserFilesService.findByTodoIdAndName(this.todoId, this.name);
         if (f == null) {
-            UserFileService.saveUserFile(this);
+            UserFilesService.save(this);
         }
     }
 
@@ -47,21 +40,16 @@ public class UserFile implements JsonConvertible {
         return this.id;
     }
 
-    public int getUserId() {
-        return this.userId;
+    public int getTodoId() {
+        return this.todoId;
     }
 
-    public String getFileName() {
-        return this.fileName;
+    public String getName() {
+        return this.name;
     }
 
-    public int getTaskId() {
-        return this.taskId;
-    }
-
-    private String createFile(MultipartFile file) {
-        String fileName = file.getOriginalFilename();
-        File filePath = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.userId, this.taskId, file.getOriginalFilename()));
+    private void createFile(MultipartFile file) {
+        File filePath = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.todoId, this.name));
         if (!filePath.getParentFile().exists()) {
             filePath.getParentFile().mkdirs();
         }
@@ -70,7 +58,13 @@ public class UserFile implements JsonConvertible {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return fileName;
     }
 
+    public void deleteFile() {
+        File file = new File(String.format(AdolfServerApplication.FILE_PATH_TEMPLATE, this.todoId, this.name));
+        if (file.exists()) {
+            file.delete();
+        }
+        UserFilesService.delete(this);
+    }
 }

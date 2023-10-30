@@ -1,204 +1,333 @@
 package net.mlk.adolfserver.api.finance;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import net.mlk.adolfserver.AdolfServerApplication;
-import net.mlk.adolfserver.data.finance.FinanceData;
-import net.mlk.adolfserver.data.finance.FinanceRepository;
+import net.mlk.adolfserver.data.finance.Finance;
 import net.mlk.adolfserver.data.finance.FinanceService;
-import net.mlk.adolfserver.data.finance.archive.FinanceArchiveData;
-import net.mlk.adolfserver.data.finance.archive.FinanceArchiveRepository;
-import net.mlk.adolfserver.data.finance.archive.FinanceArchiveService;
+import net.mlk.adolfserver.data.finance.history.Transaction;
+import net.mlk.adolfserver.data.finance.history.TransactionService;
 import net.mlk.adolfserver.data.user.session.Session;
 import net.mlk.adolfserver.errors.ResponseError;
-import net.mlk.jmson.JsonList;
+import net.mlk.adolfserver.utils.AdolfUtils;
+import net.mlk.jmson.Json;
 import net.mlk.jmson.utils.JsonConverter;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Controller
 public class FinanceController {
 
-    @PostMapping(path = {"/finance", "/finance/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createFinance(@RequestParam(value = "salary") double salary,
-                                                @RequestParam(value = "salary_date") String date,
-                                                @RequestParam(value = "remains", required = false, defaultValue = "0") double start,
-                                                HttpServletRequest request,
-                                                HttpServletResponse response) {
-        FinanceRepository financeRepository = FinanceService.getFinanceRepository();
-        Session session = (Session) request.getAttribute("session");
+    @PostMapping(path = {"/finances", "/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> createFinance(@RequestParam double salary,
+                                                       @RequestParam(name = "salary_date") String date,
+                                                       @RequestParam(required = false, defaultValue = "0") double remain,
+                                                       @RequestAttribute Session session) {
         int userId = session.getUserId();
 
-        if (financeRepository.findByUserId(userId) != null) {
-            return new ResponseEntity<>(new ResponseError("Учет финансов уже был создан для этого аккаунта.").toString(), HttpStatus.CONFLICT);
+        if (FinanceService.findByUserId(userId) != null) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         } else if (salary <= 0) {
-            return new ResponseEntity<>(new ResponseError("А что вы будете учитывать?").toString(), HttpStatus.BAD_REQUEST);
-        } else if (!AdolfServerApplication.compareDateFormat(date)) {
-            return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ResponseError("Very strange salary..."), HttpStatus.BAD_REQUEST);
+        } else if (!AdolfUtils.compareDateFormat(date)) {
+            return new ResponseEntity<>(new ResponseError("Wrong date format."), HttpStatus.BAD_REQUEST);
         }
+
         LocalDate salaryDate = LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT);
-        FinanceData financeData = new FinanceData(userId, salary, start, salaryDate);
-        return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
+        Finance finance = new Finance(userId, salary, remain, salaryDate);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "/finances");
+        return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @GetMapping(path = {"/finance", "/finance/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> financeGet(@RequestParam(value = "date", required = false) String date,
-                                             HttpServletRequest request,
-                                             HttpServletResponse response) {
-        FinanceRepository financeRepository = FinanceService.getFinanceRepository();
-        Session session = (Session) request.getAttribute("session");
+    @PostMapping(path = {"/finances/transactions", "/finances/transactions/"})
+    public ResponseEntity<ResponseError> spendMoney(@RequestParam String type,
+                                                    @RequestParam double value,
+                                                    @RequestParam(required = false) String description,
+                                                    @RequestAttribute Session session) {
         int userId = session.getUserId();
-        FinanceData financeData;
+        Finance finance;
 
-        if ((financeData = financeRepository.findByUserId(userId)) == null) {
-            return new ResponseEntity<>(new ResponseError("Учет финансов не найден для этого аккаунта.").toString(), HttpStatus.BAD_REQUEST);
+        if ((finance = validateCurrentDateFinance(userId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else if (!type.isEmpty() && !type.equalsIgnoreCase("spend") && !type.equalsIgnoreCase("add")) {
+            return new ResponseEntity<>(new ResponseError("Unknown type. Allowed: [spend, add]"), HttpStatus.BAD_REQUEST);
         }
 
-        if (financeData.updateSalary()) {
-            financeRepository.save(financeData);
-        }
-
-        if (date == null) {
-            JsonList list = financeRepository.findAllDatesByUserId(userId);
-            return new ResponseEntity<>(list.toString(), HttpStatus.OK);
-        } else if (date.equalsIgnoreCase("now")) {
-            return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
+        Transaction transaction;
+        if (type.equalsIgnoreCase("spend")) {
+             transaction = finance.spend(value, description);
         } else {
-            if (!AdolfServerApplication.compareDateFormat(date)) {
-                return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
-            }
-            FinanceArchiveRepository financeArchiveRepository = FinanceArchiveService.getFinanceArchiveRepository();
-            FinanceArchiveData data = financeArchiveRepository
-                    .findFinanceByUserIdAndMonth(userId, LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT).getMonthValue());
-            if (data == null) {
-                return new ResponseEntity<>(new ResponseError("Отчета на эту дату не найдено.").toString(), HttpStatus.BAD_REQUEST);
-            }
-            financeData = new FinanceData(data);
-            return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
+            transaction = finance.add(value, description);
         }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "/finances/transactions/" + transaction.getId());
+        return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @RequestMapping(path = "/finance/{id}", method = RequestMethod.POST, headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> financeUpdate(@PathVariable String id,
-                                                @RequestParam(value = "salary", required = false, defaultValue = "-1") double salary,
-                                                @RequestParam(value = "spent", required = false, defaultValue = "-1") double spent,
-                                                @RequestParam(value = "description", required = false) String description,
-                                                @RequestParam(value = "salary_date", required = false) String salaryDate,
-                                                @RequestParam(value = "remains", required = false, defaultValue = "-1") double remains,
-                                                HttpServletRequest request,
-                                                HttpServletResponse response) {
-        FinanceArchiveRepository financeArchiveRepository = FinanceArchiveService.getFinanceArchiveRepository();
-        Session session = (Session) request.getAttribute("session");
+    @GetMapping(path = {"/finances/transactions", "/finances/transactions/"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Json>> getTransactions(@RequestAttribute Session session) {
         int userId = session.getUserId();
-        int finId;
-        try {
-            finId = Integer.parseInt(id);
-        } catch (Exception ex) {
-            return new ResponseEntity<>(new ResponseError("Айди должно быть в виде числа").toString(), HttpStatus.BAD_REQUEST);
-        }
-        FinanceArchiveData financeArchiveData;
+        Finance finance;
 
-
-        if ((financeArchiveData = financeArchiveRepository.findByIdAndUserId(finId, userId)) == null) {
-            return new ResponseEntity<>(new ResponseError("Запись не найдена.").toString(), HttpStatus.BAD_REQUEST);
-        } else if (remains != -1 && salary == -1 && spent == -1 && salaryDate == null && description == null) {
-            return new ResponseEntity<>(JsonConverter.convertToJson(financeArchiveData).toString(), HttpStatus.OK);
-        }
-        if (remains != -1) {
-            financeArchiveData.setRemains(remains);
+        if ((finance = validateCurrentDateFinance(userId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        if (salaryDate != null) {
-            if (!AdolfServerApplication.compareDateFormat(salaryDate)) {
-                return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
-            }
-            financeArchiveData.setSalaryDate(LocalDate.parse(salaryDate, AdolfServerApplication.DATE_FORMAT));
-        }
-
-        if (salary != -1) {
-            if (salary <= 0 && salary != -1) {
-                return new ResponseEntity<>(new ResponseError("Что с зарплатой?").toString(), HttpStatus.BAD_REQUEST);
-            }
-            financeArchiveData.setSalary(salary);
-        }
-
-        if (spent != -1){
-            financeArchiveData.spent(spent);
-        }
-
-        if (description != null) {
-            financeArchiveData.setDescription(description);
-        }
-        FinanceArchiveService.save(financeArchiveData);
-        return new ResponseEntity<>(JsonConverter.convertToJson(financeArchiveData).toString(), HttpStatus.OK);
+        return new ResponseEntity<>(TransactionService.findAllJsonsByFinanceId(finance.getId()), HttpStatus.OK);
     }
 
-    @RequestMapping(path = "/finance", method = RequestMethod.POST, headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> financeUpdate(@RequestParam(value = "salary", required = false, defaultValue = "-1") double salary,
-                                                @RequestParam(value = "spent", required = false, defaultValue = "-1") double spent,
-                                                @RequestParam(value = "description", required = false) String description,
-                                                @RequestParam(value = "salary_date", required = false) String salaryDate,
-                                                @RequestParam(value = "remains", required = false, defaultValue = "-1") double remains,
-                                                HttpServletRequest request,
-                                                HttpServletResponse response) {
-        FinanceRepository financeRepository = FinanceService.getFinanceRepository();
-        Session session = (Session) request.getAttribute("session");
+    @GetMapping(path = {"/finances", "/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Json> getFinance(@RequestAttribute Session session) {
         int userId = session.getUserId();
-        FinanceData financeData;
+        Finance finance;
 
-        if ((financeData = financeRepository.findByUserId(userId)) == null) {
-            return new ResponseEntity<>(new ResponseError("Учет финансов не найден для этого аккаунта.").toString(), HttpStatus.BAD_REQUEST);
-        } else if (salary == -1 && spent == -1 && salaryDate == null && remains != -1) {
-            return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
+        if ((finance = validateCurrentDateFinance(userId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-        if (remains != -1) {
-            financeData.setRemains(remains);
+        if (finance.updateSalary()) {
+            FinanceService.save(finance);
         }
-
-        if (salaryDate != null) {
-            if (!AdolfServerApplication.compareDateFormat(salaryDate)) {
-                return new ResponseEntity<>(new ResponseError("Неверный формат даты.").toString(), HttpStatus.BAD_REQUEST);
-            }
-            financeData.setSalaryDate(LocalDate.parse(salaryDate, AdolfServerApplication.DATE_FORMAT));
-        }
-
-        if (salary != -1) {
-            if (salary <= 0 && salary != -1) {
-                return new ResponseEntity<>(new ResponseError("Что с зарплатой?").toString(), HttpStatus.BAD_REQUEST);
-            }
-            financeData.setSalary(salary);
-        }
-        if (spent != -1) {
-            financeData.spent(spent, description);
-        }
-
-        financeData.updateSalary();
-        FinanceService.save(financeData);
-        return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
+        return new ResponseEntity<>(JsonConverter.convertToJson(finance), HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/finance", "/finance/"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> financeDelete(HttpServletRequest request,
-                                                HttpServletResponse response) {
-        FinanceRepository financeRepository = FinanceService.getFinanceRepository();
-        FinanceArchiveRepository financeArchiveRepository = FinanceArchiveService.getFinanceArchiveRepository();
-        Session session = (Session) request.getAttribute("session");
+    @GetMapping(path = {"/finances/history", "/finances/history/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Json>> getFinancesHistory(@RequestAttribute Session session) {
         int userId = session.getUserId();
-        FinanceData financeData;
+        return new ResponseEntity<>(FinanceService.findAllHistoryJsonsByUserId(userId), HttpStatus.OK);
+    }
 
-        if ((financeData = financeRepository.findByUserId(userId)) == null) {
-            return new ResponseEntity<>(new ResponseError("Учет финансов не найден для этого аккаунта.").toString(), HttpStatus.BAD_REQUEST);
-        } else {
-            financeRepository.delete(financeData);
-            financeArchiveRepository.deleteAll(financeData.getArchiveData());
-            return new ResponseEntity<>(JsonConverter.convertToJson(financeData).toString(), HttpStatus.OK);
+    @GetMapping(path = {"/finances/history/{fId}/transactions", "/finances/history/{fId}/transactions/"})
+    public ResponseEntity<List<Json>> getHistoryTransactions(@PathVariable String fId,
+                                                             @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int financeId = AdolfUtils.tryParseInteger(fId);
+
+        if (FinanceService.findByIdAndUserId(financeId, userId) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
+        return new ResponseEntity<>(TransactionService.findAllJsonsByFinanceId(financeId), HttpStatus.OK);
+    }
+
+    @PatchMapping(path = {"/finances", "/finances/"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = {"/finances", "/finances/"},
+            method = RequestMethod.POST,
+            headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> patchFinances(@RequestParam double salary,
+                                                       @RequestParam double remains,
+                                                       @RequestParam(value = "salary_date") String date,
+                                                       @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        Finance finance;
+
+        if ((finance = validateCurrentDateFinance(userId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return this.updateFinance(true, finance, salary, remains, date);
+    }
+
+    @PatchMapping(path = {"/finances/history/{fId}", "/finances/history/{fId}/"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = {"/finances/history/{fId}", "/finances/history/{fId}/"},
+            method = RequestMethod.POST,
+            headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> patchFinancesHistory(@PathVariable String fId,
+                                                              @RequestParam double salary,
+                                                              @RequestParam double remains,
+                                                              @RequestParam(value = "salary_date") String date,
+                                                              @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int financeId = AdolfUtils.tryParseInteger(fId);
+        Finance finance;
+
+        if ((finance = FinanceService.findByIdAndUserId(financeId, userId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return this.updateFinance(false, finance, salary, remains, date);
+    }
+
+    @PatchMapping(path = {"/finances/history/{fId}/transactions/{tId}", "/finances/history/{fId}/transactions/{tId}/"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = {"/finances/history/{fId}/transactions/{tId}", "/finances/history/{fId}/transactions/{tId}/"},
+            method = RequestMethod.POST,
+            headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> patchTransactionHistory(@PathVariable String fId,
+                                                                 @PathVariable String tId,
+                                                                 @RequestParam String type,
+                                                                 @RequestParam double value,
+                                                                 @RequestParam double salary,
+                                                                 @RequestParam double remains,
+                                                                 @RequestParam String description,
+                                                                 @RequestParam(value = "salary_date") String date,
+                                                                 @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int financeId = AdolfUtils.tryParseInteger(fId);
+        int transactionId = AdolfUtils.tryParseInteger(tId);
+        Transaction transaction;
+
+        if (FinanceService.findByIdAndUserId(financeId, userId) == null ||
+                (transaction = TransactionService.findByIdAndFinanceId(transactionId, financeId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return updateTransaction(transaction, type, value, salary, remains, description, date);
+    }
+
+    @PatchMapping(path = {"/finances/transactions/{tId}", "/finances/transactions/{tId}/"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = {"/finances/transactions/{tId}", "/finances/transactions/{tId}/"},
+            method = RequestMethod.POST,
+            headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> patchTransaction(@PathVariable String tId,
+                                                          @RequestParam String type,
+                                                          @RequestParam double value,
+                                                          @RequestParam double salary,
+                                                          @RequestParam double remains,
+                                                          @RequestParam String description,
+                                                          @RequestParam(value = "salary_date") String date,
+                                                          @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int transactionId = AdolfUtils.tryParseInteger(tId);
+        Finance finance;
+        Transaction transaction;
+
+        if ((finance = validateCurrentDateFinance(userId)) == null ||
+                (transaction = TransactionService.findByIdAndFinanceId(transactionId, finance.getId())) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return updateTransaction(transaction, type, value, salary, remains, description, date);
+    }
+
+
+    @DeleteMapping(path = {"/finances/history/{fId}", "/finances/history/{fId}/"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> deleteHistoryFinance(@PathVariable String fId,
+                                                              @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int financeId = AdolfUtils.tryParseInteger(fId);
+        Finance finance;
+
+        if ((finance = FinanceService.findByIdAndUserId(financeId, userId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        FinanceService.delete(finance);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = {"/finances/history/{fId}/transactions/{tId}", "/finances/history/{fId}/transactions/{tId}"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> deleteHistoryTransaction(@PathVariable String fId,
+                                                                  @PathVariable String tId,
+                                                                  @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int financeId = AdolfUtils.tryParseInteger(fId);
+        int transactionId = AdolfUtils.tryParseInteger(tId);
+        Transaction transaction;
+
+        if (FinanceService.findByIdAndUserId(financeId, userId) == null ||
+            (transaction = TransactionService.findByIdAndFinanceId(transactionId, financeId)) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        TransactionService.delete(transaction);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = {"/finances/transactions/{tId}", "/finances/transactions/{tId}"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> deleteTransaction(@PathVariable String tId,
+                                                           @RequestAttribute Session session) {
+        int userId = session.getUserId();
+        int transactionId = AdolfUtils.tryParseInteger(tId);
+        Finance finance;
+        Transaction transaction;
+
+        if ((finance = validateCurrentDateFinance(userId)) == null ||
+            (transaction = TransactionService.findByIdAndFinanceId(transactionId, finance.getId())) == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        TransactionService.delete(transaction);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = {"/finances", "/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseError> deleteFinance(@RequestAttribute Session session) {
+        int userId = session.getUserId();
+        List<Finance> finances;
+
+        if ((finances = FinanceService.findAllByUserId(userId)).isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        FinanceService.deleteAll(finances);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private static Finance validateCurrentDateFinance(int userId) {
+        Finance finance;
+        LocalDate today = LocalDate.now();
+        int month = today.getMonthValue();
+        int year = today.getYear();
+        if ((finance = FinanceService.findByUserIdAndMonthAndYear(userId, month, year)) == null) {
+            if ((finance = FinanceService.findByUserId(userId)) == null) {
+                return null;
+            }
+            if (finance.getCreationTime().getMonthValue() != LocalDate.now().getMonthValue()) {
+                finance = new Finance(userId, finance.getSalary(), finance.getRemains(), finance.getSalaryDate());
+                finance.updateSalary();
+            }
+        }
+        return finance;
+    }
+
+    private ResponseEntity<ResponseError> updateTransaction(Transaction transaction, String type,
+                                                            double value, double salary, double remains,
+                                                            String description, String date) {
+        if (salary <= 0) {
+            return new ResponseEntity<>(new ResponseError("Very strange salary..."), HttpStatus.BAD_REQUEST);
+        } else if (!AdolfUtils.compareDateFormat(date)) {
+            return new ResponseEntity<>(new ResponseError("Wrong date format."), HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDate salaryDate = LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT);
+        transaction.setDescription(description);
+        transaction.setRemains(remains);
+        transaction.setType(type, value);
+        transaction.setSalary(salary);
+        transaction.setSalaryDate(salaryDate);
+        TransactionService.save(transaction);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private ResponseEntity<ResponseError> updateFinance(boolean updateSalary, Finance finance,
+                                                        @RequestParam double salary, @RequestParam double remains,
+                                                        @RequestParam(value = "salary_date") String date) {
+        if (salary <= 0) {
+            return new ResponseEntity<>(new ResponseError("Very strange salary..."), HttpStatus.BAD_REQUEST);
+        } else if (!AdolfUtils.compareDateFormat(date)) {
+            return new ResponseEntity<>(new ResponseError("Wrong date format."), HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDate salaryDate = LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT);
+        finance.setRemains(remains);
+        finance.setSalary(salary);
+        finance.setSalaryDate(salaryDate);
+        if (updateSalary) {
+            finance.updateSalary();
+        }
+        FinanceService.save(finance);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }
