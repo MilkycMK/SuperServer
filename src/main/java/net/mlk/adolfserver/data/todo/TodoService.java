@@ -1,6 +1,5 @@
 package net.mlk.adolfserver.data.todo;
 
-import net.mlk.adolfserver.data.group.lesson.Lesson;
 import net.mlk.jmson.Json;
 import net.mlk.jmson.utils.JsonConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ public class TodoService {
     }
 
     public static List<Json> findAllJsonsByUserId(int userId) {
-        List<TodoElement> todo = todoRepository.findAllByUserId(userId);
+        List<TodoElement> todo = todoRepository.findAllByUserIdOrderByCreationTime(userId);
         return todo.stream()
                 .map(JsonConverter::convertToJson)
                 .collect(Collectors.toList());
