@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS lessons (
     group_id INTEGER NOT NULL,
     name VARCHAR(64) NOT NULL,
     hours INTEGER NOT NULL,
-    passed_hours INTEGER NOT NULL
+    passed_hours INTEGER NOT NULL,
     FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE
 );
 
