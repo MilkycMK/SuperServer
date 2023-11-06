@@ -21,7 +21,7 @@ import java.time.LocalDate;
 @Controller
 public class LessonController {
 
-    @PostMapping(path = {"/groups/{gId}/lessons", "/groups/{gId}/lessons/"},
+    @PostMapping(path = {"/api/groups/{gId}/lessons", "/api/groups/{gId}/lessons/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createLesson(@PathVariable String gId,
                                           @RequestParam String name,
@@ -37,11 +37,11 @@ public class LessonController {
 
         Lesson lesson = new Lesson(groupId, name, hours);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/groups/" + groupId + "/lessons/" + lesson.getId());
+        headers.add("Location", "/api/groups/" + groupId + "/lessons/" + lesson.getId());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @PostMapping(path = {"/groups/{gId}/lessons/{lId}/history", "/groups/{gId}/lessons/{lId}/history/"},
+    @PostMapping(path = {"/api/groups/{gId}/lessons/{lId}/history", "/api/groups/{gId}/lessons/{lId}/history/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createLessonHistory(@PathVariable String gId,
                                                       @PathVariable String lId,
@@ -66,11 +66,11 @@ public class LessonController {
         lesson.addLessonHours();
         LessonService.save(lesson);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/groups/" + groupId + "/lessons/" + lessonId + "/history/" + lessonHistory.getId());
+        headers.add("Location", "/api/groups/" + groupId + "/lessons/" + lessonId + "/history/" + lessonHistory.getId());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @GetMapping(path = {"/groups/{gId}/lessons", "/groups/{gId}/lessons/"},
+    @GetMapping(path = {"/api/groups/{gId}/lessons", "/api/groups/{gId}/lessons/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getLessons(@PathVariable String gId,
                                              @RequestAttribute Session session) {
@@ -83,7 +83,7 @@ public class LessonController {
         return new ResponseEntity<>(LessonService.findByGroupId(groupId).toString(), HttpStatus.OK);
     }
 
-    @GetMapping(path = {"/groups/{gId}/lessons/{lId}/history", "/groups/{gId}/lessons/{lId}/history/"},
+    @GetMapping(path = {"/api/groups/{gId}/lessons/{lId}/history", "/api/groups/{gId}/lessons/{lId}/history/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getLessonHistory(@PathVariable String gId,
                                                    @PathVariable String lId,
@@ -99,9 +99,9 @@ public class LessonController {
     }
 
 
-    @PatchMapping(path = {"/groups/{gId}/lessons/{lId}/history/{aId}", "/groups/{gId}/lessons/{lId}/{aId}/"},
+    @PatchMapping(path = {"/api/groups/{gId}/lessons/{lId}/history/{aId}", "/api/groups/{gId}/lessons/{lId}/{aId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/groups/{gId}/lessons/{lId}/history/{aId}", "/groups/{gId}/lessons/{lId}/history/{aId}/"},
+    @RequestMapping(path = {"/api/groups/{gId}/lessons/{lId}/history/{aId}", "/api/groups/{gId}/lessons/{lId}/history/{aId}/"},
             method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> updateLessonArchive(@PathVariable String gId,
@@ -128,9 +128,9 @@ public class LessonController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PatchMapping(path = {"/groups/{gId}/lessons/{lId}", "/groups/{gId}/lessons/{lId}/"},
+    @PatchMapping(path = {"/api/groups/{gId}/lessons/{lId}", "/api/groups/{gId}/lessons/{lId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/groups/{gId}/lessons/{lId}", "/groups/{gId}/lessons/{lId}/"},
+    @RequestMapping(path = {"/api/groups/{gId}/lessons/{lId}", "/api/groups/{gId}/lessons/{lId}/"},
             method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> updateLesson(@PathVariable String gId,
@@ -155,7 +155,7 @@ public class LessonController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/groups/{gId}/lessons/{lId}/history/{aId}", "/groups/{gId}/lessons/{lId}/history/{aId}/"},
+    @DeleteMapping(path = {"/api/groups/{gId}/lessons/{lId}/history/{aId}", "/api/groups/{gId}/lessons/{lId}/history/{aId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteHistoryLesson(@PathVariable String gId,
                                                              @PathVariable String lId,
@@ -178,7 +178,7 @@ public class LessonController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/groups/{gId}/lessons/{lId}", "/groups/{gId}/lessons/{lId}/"},
+    @DeleteMapping(path = {"/api/groups/{gId}/lessons/{lId}", "/api/groups/{gId}/lessons/{lId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteLesson(@PathVariable String gId,
                                                       @PathVariable String lId,

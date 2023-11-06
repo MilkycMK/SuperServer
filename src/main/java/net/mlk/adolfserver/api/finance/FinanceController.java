@@ -20,7 +20,7 @@ import java.util.List;
 @Controller
 public class FinanceController {
 
-    @PostMapping(path = {"/finances", "/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = {"/api/finances", "/api/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createFinance(@RequestParam double salary,
                                                        @RequestParam(name = "salary_date") String date,
                                                        @RequestParam(required = false, defaultValue = "0") double remain,
@@ -38,11 +38,11 @@ public class FinanceController {
         LocalDate salaryDate = LocalDate.parse(date, AdolfServerApplication.DATE_FORMAT);
         Finance finance = new Finance(userId, salary, remain, salaryDate);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/finances");
+        headers.add("Location", "/api/finances");
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @PostMapping(path = {"/finances/transactions", "/finances/transactions/"})
+    @PostMapping(path = {"/api/finances/transactions", "/api/finances/transactions/"})
     public ResponseEntity<ResponseError> spendMoney(@RequestParam String type,
                                                     @RequestParam double value,
                                                     @RequestParam(required = false) String description,
@@ -64,11 +64,11 @@ public class FinanceController {
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/finances/transactions/" + transaction.getId());
+        headers.add("Location", "/api/finances/transactions/" + transaction.getId());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @GetMapping(path = {"/finances/transactions", "/finances/transactions/"},
+    @GetMapping(path = {"/api/finances/transactions", "/api/finances/transactions/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Json>> getTransactions(@RequestAttribute Session session) {
         int userId = session.getUserId();
@@ -81,7 +81,7 @@ public class FinanceController {
         return new ResponseEntity<>(TransactionService.findAllJsonsByFinanceId(finance.getId()), HttpStatus.OK);
     }
 
-    @GetMapping(path = {"/finances", "/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = {"/api/finances", "/api/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Json> getFinance(@RequestAttribute Session session) {
         int userId = session.getUserId();
         Finance finance;
@@ -95,13 +95,13 @@ public class FinanceController {
         return new ResponseEntity<>(JsonConverter.convertToJson(finance), HttpStatus.OK);
     }
 
-    @GetMapping(path = {"/finances/history", "/finances/history/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = {"/api/finances/history", "/api/finances/history/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Json>> getFinancesHistory(@RequestAttribute Session session) {
         int userId = session.getUserId();
         return new ResponseEntity<>(FinanceService.findAllHistoryJsonsByUserId(userId), HttpStatus.OK);
     }
 
-    @GetMapping(path = {"/finances/history/{fId}/transactions", "/finances/history/{fId}/transactions/"})
+    @GetMapping(path = {"/api/finances/history/{fId}/transactions", "/api/finances/history/{fId}/transactions/"})
     public ResponseEntity<List<Json>> getHistoryTransactions(@PathVariable String fId,
                                                              @RequestAttribute Session session) {
         int userId = session.getUserId();
@@ -114,9 +114,9 @@ public class FinanceController {
         return new ResponseEntity<>(TransactionService.findAllJsonsByFinanceId(financeId), HttpStatus.OK);
     }
 
-    @PatchMapping(path = {"/finances", "/finances/"},
+    @PatchMapping(path = {"/api/finances", "/api/finances/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/finances", "/finances/"},
+    @RequestMapping(path = {"/api/finances", "/api/finances/"},
             method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> patchFinances(@RequestParam double salary,
@@ -133,9 +133,9 @@ public class FinanceController {
         return this.updateFinance(true, finance, salary, remains, date);
     }
 
-    @PatchMapping(path = {"/finances/history/{fId}", "/finances/history/{fId}/"},
+    @PatchMapping(path = {"/api/finances/history/{fId}", "/api/finances/history/{fId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/finances/history/{fId}", "/finances/history/{fId}/"},
+    @RequestMapping(path = {"/api/finances/history/{fId}", "/api/finances/history/{fId}/"},
             method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> patchFinancesHistory(@PathVariable String fId,
@@ -154,9 +154,9 @@ public class FinanceController {
         return this.updateFinance(false, finance, salary, remains, date);
     }
 
-    @PatchMapping(path = {"/finances/history/{fId}/transactions/{tId}", "/finances/history/{fId}/transactions/{tId}/"},
+    @PatchMapping(path = {"/api/finances/history/{fId}/transactions/{tId}", "/api/finances/history/{fId}/transactions/{tId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/finances/history/{fId}/transactions/{tId}", "/finances/history/{fId}/transactions/{tId}/"},
+    @RequestMapping(path = {"/api/finances/history/{fId}/transactions/{tId}", "/api/finances/history/{fId}/transactions/{tId}/"},
             method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> patchTransactionHistory(@PathVariable String fId,
@@ -181,9 +181,9 @@ public class FinanceController {
         return updateTransaction(transaction, type, value, salary, remains, description, date);
     }
 
-    @PatchMapping(path = {"/finances/transactions/{tId}", "/finances/transactions/{tId}/"},
+    @PatchMapping(path = {"/api/finances/transactions/{tId}", "/api/finances/transactions/{tId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/finances/transactions/{tId}", "/finances/transactions/{tId}/"},
+    @RequestMapping(path = {"/api/finances/transactions/{tId}", "/api/finances/transactions/{tId}/"},
             method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> patchTransaction(@PathVariable String tId,
@@ -208,7 +208,7 @@ public class FinanceController {
     }
 
 
-    @DeleteMapping(path = {"/finances/history/{fId}", "/finances/history/{fId}/"},
+    @DeleteMapping(path = {"/api/finances/history/{fId}", "/api/finances/history/{fId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteHistoryFinance(@PathVariable String fId,
                                                               @RequestAttribute Session session) {
@@ -224,7 +224,7 @@ public class FinanceController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/finances/history/{fId}/transactions/{tId}", "/finances/history/{fId}/transactions/{tId}"},
+    @DeleteMapping(path = {"/api/finances/history/{fId}/transactions/{tId}", "/api/finances/history/{fId}/transactions/{tId}"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteHistoryTransaction(@PathVariable String fId,
                                                                   @PathVariable String tId,
@@ -243,7 +243,7 @@ public class FinanceController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/finances/transactions/{tId}", "/finances/transactions/{tId}"},
+    @DeleteMapping(path = {"/api/finances/transactions/{tId}", "/api/finances/transactions/{tId}"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteTransaction(@PathVariable String tId,
                                                            @RequestAttribute Session session) {
@@ -261,7 +261,7 @@ public class FinanceController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/finances", "/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = {"/api/finances", "/api/finances/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteFinance(@RequestAttribute Session session) {
         int userId = session.getUserId();
         List<Finance> finances;
