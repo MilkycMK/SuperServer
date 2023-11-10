@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class GroupController {
 
-    @PostMapping(path = {"/api/groups", "/api/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = {"/groups", "/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createGroup(@RequestParam String name,
                                          @RequestAttribute Session session) {
         int userId = session.getUserId();
@@ -30,18 +30,18 @@ public class GroupController {
 
         Group createdGroup = new Group(userId, name);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/api/groups/" + createdGroup.getId());
+        headers.add("Location", "/groups/" + createdGroup.getId());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @GetMapping(path = {"/api/groups", "/api/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = {"/groups", "/groups/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getGroups(@RequestAttribute Session session) {
         int userId = session.getUserId();
         return new ResponseEntity<>(GroupService.findAllByUserId(userId).toString(), HttpStatus.OK);
     }
 
-    @PatchMapping(path = {"/api/groups/{gId}", "/api/groups/{gId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/api/groups/{gId}", "/api/groups/{gId}/"}, method = RequestMethod.POST,
+    @PatchMapping(path = {"/groups/{gId}", "/groups/{gId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> updateGroup(@PathVariable String gId,
                                          @RequestParam(value = "group") String groupName,
@@ -67,7 +67,7 @@ public class GroupController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/api/groups/{gId}", "/api/groups/{gId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = {"/groups/{gId}", "/groups/{gId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteGroup(@PathVariable String gId,
                                                      @RequestAttribute Session session) {
         int userId = session.getUserId();
