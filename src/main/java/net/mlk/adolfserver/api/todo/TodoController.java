@@ -31,7 +31,7 @@ import java.util.List;
 @ControllerAdvice
 public class TodoController {
 
-    @PostMapping(path = {"/api/todo", "/api/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = {"/todo", "/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createTodo(@RequestParam String topic,
                                                     @RequestParam(name = "task_time") String taskTime,
                                                     @RequestParam(required = false) String description,
@@ -55,11 +55,11 @@ public class TodoController {
         LocalDateTime tasked = LocalDateTime.parse(taskTime, AdolfServerApplication.TIMEDATE_FORMAT);
         TodoElement element = new TodoElement(userId, topic, description, files, created, tasked);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/api/todo/" + element.getId());
+        headers.add("Location", "/todo/" + element.getId());
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @PostMapping(path = {"/api/todo/{tId}/files", "/api/todo/{tId}/files/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = {"/todo/{tId}/files", "/todo/{tId}/files/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> createFile(@PathVariable String tId,
                                                     @RequestParam MultipartFile[] files,
                                                     @RequestAttribute Session session) {
@@ -76,19 +76,19 @@ public class TodoController {
         HttpHeaders headers = new HttpHeaders();
         List<String> locations = new ArrayList<>();
         for (int id : todoElement.uploadFiles(files)) {
-            locations.add("/api/todo/" + todoId + "/files/" + id);
+            locations.add("/todo/" + todoId + "/files/" + id);
         }
         headers.addAll("Location", locations);
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
-    @GetMapping(path = {"/api/todo", "/api/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = {"/todo", "/todo/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Json>> getTodo(@RequestAttribute Session session) {
         int userId = session.getUserId();
         return new ResponseEntity<>(TodoService.findAllJsonsByUserId(userId), HttpStatus.OK);
     }
 
-    @GetMapping(path = {"/api/todo/{tId}/files", "/api/todo/{tId}/files/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = {"/todo/{tId}/files", "/todo/{tId}/files/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Json>> getTodo(@PathVariable String tId,
                                           @RequestAttribute Session session) {
         int userId = session.getUserId();
@@ -101,7 +101,7 @@ public class TodoController {
         return new ResponseEntity<>(UserFilesService.findAllJsonByTodoId(todoId), HttpStatus.OK);
     }
 
-    @GetMapping(path = {"/api/todo/{tId}/files/{fId}", "/api/todo/{tId}/files/{fId}/"})
+    @GetMapping(path = {"/todo/{tId}/files/{fId}", "/todo/{tId}/files/{fId}/"})
     public ResponseEntity<ByteArrayResource> downloadFile(@PathVariable String tId,
                                                           @PathVariable String fId,
                                                           @RequestAttribute Session session) throws IOException {
@@ -120,9 +120,9 @@ public class TodoController {
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
-    @PatchMapping(path = {"/api/todo/{tId}", "/api/todo/{tId}/"},
+    @PatchMapping(path = {"/todo/{tId}", "/todo/{tId}/"},
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = {"/api/todo/{tId}", "/api/todo/{tId}/"},
+    @RequestMapping(path = {"/todo/{tId}", "/todo/{tId}/"},
             method = RequestMethod.POST,
             headers = {"X-HTTP-Method-Override=PATCH"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> updateTodo(@PathVariable String tId,
@@ -151,7 +151,7 @@ public class TodoController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/api/todo/{tId}/files/{fId}", "/api/todo/{tId}/files/{fId}"},
+    @DeleteMapping(path = {"/todo/{tId}/files/{fId}", "/todo/{tId}/files/{fId}"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteFile(@PathVariable String tId,
                                                     @PathVariable String fId,
@@ -170,7 +170,7 @@ public class TodoController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = {"/api/todo/{tId}", "/api/todo/{tId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = {"/todo/{tId}", "/todo/{tId}/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseError> deleteTodo(@PathVariable String tId,
                                                     @RequestAttribute Session session) {
         int userId = session.getUserId();
