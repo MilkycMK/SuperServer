@@ -2,12 +2,8 @@ package net.mlk.adolfserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-
 import java.time.format.DateTimeFormatter;
 
-@Controller
 @SpringBootApplication
 public class AdolfServerApplication {
     public static final int MAX_FILE_SIZE = 10;
