@@ -14,15 +14,18 @@ services:
       - '3307:3306'
     expose:
       - 3306
-#  web:
-#    image: openjdk:17-oracle
-#    depends_on:
-#      - db
-#    ports:
-#      - "8080:8080"
-#    expose:
-#      - 8080
-#    volumes:
-#      - ./build/libs/MLKitAPI.jar:/MLKitAPI.jar
-#      - ./secret.properties:/secret.properties
-#    command: java -jar MLKitAPI.jar --spring.datasource.url=jdbc:mariadb://mlkit-db:3306/mlkit
+    restart: always
+  web:
+    image: openjdk:17-oracle
+    depends_on:
+      - db
+    working_dir: /server
+    volumes:
+      - ./build/libs/AdolfServer.jar:/server/AdolfServer.jar
+      - ./certificate.p12:/server/certificate.p12
+    command: java -jar /server/AdolfServer.jar --spring.datasource.url=jdbc:mariadb://db:3306/app
+    ports:
+      - '8443:8443'
+    expose:
+      - 8443
+    restart: always
