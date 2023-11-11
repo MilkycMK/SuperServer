@@ -2,3 +2,7 @@
 .gradle
 build
 certificate.p12
+adolf_logs
+
+# server docker image
+*.tar
