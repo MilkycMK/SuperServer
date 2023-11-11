@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.3'
 services:
   db:
     image: mariadb
@@ -14,15 +14,16 @@ services:
       - '3307:3306'
     expose:
       - 3306
-#  web:
-#    image: openjdk:17-oracle
-#    depends_on:
-#      - db
-#    ports:
-#      - "8080:8080"
-#    expose:
-#      - 8080
-#    volumes:
-#      - ./build/libs/MLKitAPI.jar:/MLKitAPI.jar
-#      - ./secret.properties:/secret.properties
-#    command: java -jar MLKitAPI.jar --spring.datasource.url=jdbc:mariadb://mlkit-db:3306/mlkit
+    restart: always
+  web:
+    image: adolfserver
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - '8443:8443'
+    expose:
+      - 8443
+    restart: always

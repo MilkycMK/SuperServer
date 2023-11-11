@@ -2,14 +2,13 @@ package net.mlk.adolfserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-
 import java.time.format.DateTimeFormatter;
+import org.springframework.context.annotation.Configuration;
 
-@Controller
 @SpringBootApplication
+@Configuration
 public class AdolfServerApplication {
+
     public static final int MAX_FILE_SIZE = 10;
     public static final String FILE_PATH_TEMPLATE = "userFiles/%s/%s";
     public static final String FILES_PATH_TEMPLATE = "userFiles/%s";
