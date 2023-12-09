@@ -30,7 +30,7 @@ public class TodoElement implements JsonConvertible {
     @Column(name = "task_time")
     @JsonField(key = "task_time")
     private LocalDateTime taskTime;
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(insertable = false, updatable = false, name = "todo_id", referencedColumnName = "id")
     private List<UserFile> files = new ArrayList<>();
 
