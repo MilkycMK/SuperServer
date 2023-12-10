@@ -28,7 +28,7 @@ public class TodoElement implements JsonConvertible {
     @JsonField(key = "creation_time")
     private LocalDateTime creationTime;
     @Column(name = "task_time")
-    @JsonField(key = "task_time")
+    @JsonField(key = "task_time", dateFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime taskTime;
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(insertable = false, updatable = false, name = "todo_id", referencedColumnName = "id")
