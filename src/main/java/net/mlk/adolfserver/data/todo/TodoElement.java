@@ -25,7 +25,7 @@ public class TodoElement implements JsonConvertible {
     private String topic;
     private String description;
     @Column(name = "creation_time")
-    @JsonField(key = "creation_time")
+    @JsonField(key = "creation_time", dateFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime creationTime;
     @Column(name = "task_time")
     @JsonField(key = "task_time", dateFormat = "yyyy-MM-dd HH:mm:ss")
