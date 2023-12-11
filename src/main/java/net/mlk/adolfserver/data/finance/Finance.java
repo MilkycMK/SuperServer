@@ -19,12 +19,12 @@ public class Finance implements JsonConvertible {
     @JsonIgnore
     private int userId;
     private double salary;
-    private double remains;
+    private double remain;
     @Column(name = "creation_date")
-    @JsonField(key = "creation_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @JsonField(key = "creation_date", dateFormat = "yyyy-MM-dd")
     private LocalDate creationDate;
     @Column(name = "salary_date")
-    @JsonField(key = "salary_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @JsonField(key = "salary_date", dateFormat = "yyyy-MM-dd")
     private LocalDate salaryDate;
 
     protected Finance() {
@@ -35,12 +35,12 @@ public class Finance implements JsonConvertible {
         this.userId = userId;
         this.salary = salary;
         this.creationDate = LocalDate.now();
-        this.remains += remains;
+        this.remain += remains;
         this.salaryDate = salaryDate;
         boolean updated = this.updateSalary();
         FinanceService.save(this);
         if (updated) {
-            Transaction transaction = new Transaction(this.id, "add", this.salary, 0, this.salary, this.remains,
+            Transaction transaction = new Transaction(this.id, "add", this.salary, 0, this.salary, this.remain,
                     "the salary", LocalDate.now(), this.salaryDate);
         }
     }
@@ -50,7 +50,7 @@ public class Finance implements JsonConvertible {
     }
 
     public void setRemains(double remains) {
-        this.remains = remains;
+        this.remain = remains;
     }
 
     public void setSalaryDate(LocalDate salaryDate) {
@@ -58,16 +58,16 @@ public class Finance implements JsonConvertible {
     }
 
     public Transaction spend(double spend, String description) {
-        this.remains -= spend < 0 ?  spend * -1 : spend;
-        Transaction transaction = new Transaction(this.id, "spend", this.salary, spend, 0, this.remains,
+        this.remain -= spend < 0 ?  spend * -1 : spend;
+        Transaction transaction = new Transaction(this.id, "spend", this.salary, spend, 0, this.remain,
                 description, LocalDate.now(), this.salaryDate);
         TransactionService.save(transaction);
         return transaction;
     }
 
     public Transaction add(double add, String description) {
-        this.remains += add < 0 ?  add * -1 : add;
-        Transaction transaction = new Transaction(this.id, "add", this.salary, 0, add, this.remains,
+        this.remain += add < 0 ?  add * -1 : add;
+        Transaction transaction = new Transaction(this.id, "add", this.salary, 0, add, this.remain,
                 description, LocalDate.now(), this.salaryDate);
         TransactionService.save(transaction);
         return transaction;
@@ -79,7 +79,7 @@ public class Finance implements JsonConvertible {
             if (this.id != 0) {
                 this.add(this.salary, "the salary");
             } else {
-                this.remains += this.salary;
+                this.remain += this.salary;
             }
             this.salaryDate = today.plusMonths(1);
             return true;
@@ -104,7 +104,7 @@ public class Finance implements JsonConvertible {
     }
 
     public double getRemains() {
-        return this.remains;
+        return this.remain;
     }
 
     public LocalDate getCreationTime() {

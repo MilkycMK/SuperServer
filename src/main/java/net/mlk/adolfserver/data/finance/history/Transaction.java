@@ -19,13 +19,13 @@ public class Transaction implements JsonConvertible {
     private String type;
     private double salary;
     private double value;
-    private double remains;
+    private double remain;
     private String description;
     @Column(name = "creation_date")
-    @JsonField(key = "creation_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @JsonField(key = "creation_date", dateFormat = "yyyy-MM-dd")
     private LocalDate creationDate;
     @Column(name = "salary_date")
-    @JsonField(key = "salary_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @JsonField(key = "salary_date", dateFormat = "yyyy-MM-dd")
     private LocalDate salaryDate;
 
     protected Transaction() {
@@ -42,7 +42,7 @@ public class Transaction implements JsonConvertible {
         } else {
             this.value = spent;
         }
-        this.remains = remains;
+        this.remain = remains;
         this.description = description;
         this.creationDate = creationDate;
         this.salaryDate = salaryDate;
@@ -50,7 +50,7 @@ public class Transaction implements JsonConvertible {
     }
 
     public void setRemains(double remains) {
-        this.remains = remains;
+        this.remain = remains;
     }
 
     public void setSalary(double salary) {
@@ -68,9 +68,9 @@ public class Transaction implements JsonConvertible {
     public void setType(String type, double value) {
         this.type = type;
         if (type.equalsIgnoreCase("add")) {
-            this.remains += value;
+            this.remain += value;
         } else {
-            this.remains -= value;
+            this.remain -= value;
         }
     }
 
@@ -91,7 +91,7 @@ public class Transaction implements JsonConvertible {
     }
 
     public double getRemains() {
-        return this.remains;
+        return this.remain;
     }
 
     public String getDescription() {
