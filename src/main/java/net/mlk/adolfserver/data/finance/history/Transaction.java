@@ -22,10 +22,10 @@ public class Transaction implements JsonConvertible {
     private double remains;
     private String description;
     @Column(name = "creation_date")
-    @JsonField(key = "creation_date")
+    @JsonField(key = "creation_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDate creationDate;
     @Column(name = "salary_date")
-    @JsonField(key = "salary_date")
+    @JsonField(key = "salary_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDate salaryDate;
 
     protected Transaction() {

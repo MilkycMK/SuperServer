@@ -21,10 +21,10 @@ public class Finance implements JsonConvertible {
     private double salary;
     private double remains;
     @Column(name = "creation_date")
-    @JsonField(key = "creation_date")
+    @JsonField(key = "creation_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDate creationDate;
     @Column(name = "salary_date")
-    @JsonField(key = "salary_date")
+    @JsonField(key = "salary_date", dateFormat = "yyyy-MM-dd HH:mm:ss")
     private LocalDate salaryDate;
 
     protected Finance() {
