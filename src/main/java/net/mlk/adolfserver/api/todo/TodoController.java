@@ -1,5 +1,6 @@
 package net.mlk.adolfserver.api.todo;
 
+import jakarta.servlet.http.HttpServletRequest;
 import net.mlk.adolfserver.AdolfServerApplication;
 import net.mlk.adolfserver.data.todo.TodoElement;
 import net.mlk.adolfserver.data.todo.TodoService;
@@ -9,6 +10,7 @@ import net.mlk.adolfserver.data.user.session.Session;
 import net.mlk.adolfserver.errors.ResponseError;
 import net.mlk.adolfserver.utils.AdolfUtils;
 import net.mlk.jmson.Json;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -148,6 +150,7 @@ public class TodoController {
         todoElement.setTopic(topic);
         todoElement.setTaskTime(tasked);
         todoElement.setDescription(description);
+        TodoService.save(todoElement);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -158,11 +161,11 @@ public class TodoController {
                                                     @RequestAttribute Session session) {
         int userId = session.getUserId();
         int todoId = AdolfUtils.tryParseInteger(tId);
-        int fileId = AdolfUtils.tryParseInteger(fId);
+//        int fileId = AdolfUtils.tryParseInteger(fId);
         UserFile file;
 
         if (TodoService.findByIdAndUserId(todoId, userId) == null
-                || (file = UserFilesService.findByIdAndTodoId(todoId, fileId)) == null) {
+                || (file = UserFilesService.findByTodoIdAndName(todoId, fId)) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
