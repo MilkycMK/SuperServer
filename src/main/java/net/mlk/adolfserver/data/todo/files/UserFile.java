@@ -16,6 +16,7 @@ import java.io.OutputStream;
 public class UserFile implements JsonConvertible {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private int id;
     @Column(name = "todo_id")
     @JsonIgnore

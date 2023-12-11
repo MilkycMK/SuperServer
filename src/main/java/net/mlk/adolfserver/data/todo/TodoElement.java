@@ -42,7 +42,7 @@ public class TodoElement implements JsonConvertible {
                        LocalDateTime creationTime, LocalDateTime taskTime) {
         this.userId = userId;
         this.topic = topic;
-        this.description = description;
+        this.description = description == null ? "" : description;
         this.creationTime = creationTime;
         this.taskTime = taskTime;
         TodoService.save(this);
@@ -87,19 +87,23 @@ public class TodoElement implements JsonConvertible {
         return this.taskTime;
     }
 
-    public List<Integer> uploadFiles(MultipartFile[] files) {
-        List<Integer> filesId = new ArrayList<>();
+    public List<String> uploadFiles(MultipartFile[] files) {
+        List<String> names = new ArrayList<>();
         for (MultipartFile file : files) {
             if (file.getOriginalFilename() != null && !file.getOriginalFilename().isEmpty()) {
                 UserFile newFile = new UserFile(this.id, file);
-                filesId.add(newFile.getId());
+                names.add(newFile.getName());
             }
         }
-        return filesId;
+        return names;
     }
 
     public void deleteLocalFiles() {
         this.deleteDirectory(new File(String.format(AdolfServerApplication.FILES_PATH_TEMPLATE, this.id)));
+    }
+
+    public List<UserFile> getFiles() {
+        return this.files;
     }
 
     private boolean deleteDirectory(File directoryToBeDeleted) {

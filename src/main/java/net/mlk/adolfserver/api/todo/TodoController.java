@@ -75,8 +75,8 @@ public class TodoController {
 
         HttpHeaders headers = new HttpHeaders();
         List<String> locations = new ArrayList<>();
-        for (int id : todoElement.uploadFiles(files)) {
-            locations.add("/todo/" + todoId + "/files/" + id);
+        for (String name : todoElement.uploadFiles(files)) {
+            locations.add("/todo/" + todoId + "/files/" + name);
         }
         headers.addAll("Location", locations);
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
@@ -107,11 +107,11 @@ public class TodoController {
                                                           @RequestAttribute Session session) throws IOException {
         int userId = session.getUserId();
         int todoId = AdolfUtils.tryParseInteger(tId);
-        int fileId = AdolfUtils.tryParseInteger(fId);
+//        int fileId = AdolfUtils.tryParseInteger(fId);
         UserFile file;
 
         if (TodoService.findByIdAndUserId(todoId, userId) == null
-                || (file = UserFilesService.findByIdAndTodoId(fileId, todoId)) == null) {
+                || (file = UserFilesService.findByTodoIdAndName(todoId, fId)) == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
