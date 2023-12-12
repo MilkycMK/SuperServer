@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS finance (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
     user_id INTEGER NOT NULL,
     salary DOUBLE NOT NULL,
-    remains DOUBLE NOT NULL,
+    remain DOUBLE NOT NULL,
     creation_date DATE NOT NULL,
     salary_date DATE NOT NULL
 );
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     type VARCHAR(32) NOT NULL,
     value DOUBLE NOT NULL,
     salary DOUBLE NOT NULL,
-    remains DOUBLE NOT NULL,
+    remain DOUBLE NOT NULL,
     description LONGTEXT NOT NULL,
     creation_date DATE NOT NULL,
     salary_date DATE NOT NULL,

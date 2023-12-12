@@ -62,6 +62,7 @@ public class Finance implements JsonConvertible {
         Transaction transaction = new Transaction(this.id, "spend", this.salary, spend, 0, this.remain,
                 description, LocalDate.now(), this.salaryDate);
         TransactionService.save(transaction);
+        FinanceService.save(this);
         return transaction;
     }
 
@@ -70,6 +71,7 @@ public class Finance implements JsonConvertible {
         Transaction transaction = new Transaction(this.id, "add", this.salary, 0, add, this.remain,
                 description, LocalDate.now(), this.salaryDate);
         TransactionService.save(transaction);
+        FinanceService.save(this);
         return transaction;
     }
 
