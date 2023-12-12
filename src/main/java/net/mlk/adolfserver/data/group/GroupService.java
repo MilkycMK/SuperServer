@@ -32,7 +32,7 @@ public class GroupService {
     }
 
     public static List<Json> findAllByUserId(int id) {
-        List<Group> groups = groupRepository.findAllByUserId(id);
+        List<Group> groups = groupRepository.findAllByUserIdOrderByName(id);
         return groups.stream()
                 .map(JsonConverter::convertToJson)
                 .collect(Collectors.toList());

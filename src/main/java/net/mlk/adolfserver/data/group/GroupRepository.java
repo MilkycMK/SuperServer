@@ -9,5 +9,5 @@ import java.util.List;
 public interface GroupRepository extends JpaRepository<Group, Integer> {
     Group findByUserIdAndNameIgnoreCase(int userId, String group);
     Group findByIdAndUserId(int id, int userId);
-    List<Group> findAllByUserId(int id);
+    List<Group> findAllByUserIdOrderByName(int id);
 }

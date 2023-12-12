@@ -22,7 +22,7 @@ public class TodoService {
     }
 
     public static List<Json> findAllJsonsByUserId(int userId) {
-        List<TodoElement> todo = todoRepository.findAllByUserIdOrderByCreationTime(userId);
+        List<TodoElement> todo = todoRepository.findAllByUserIdOrderByTaskTime(userId);
         return todo.stream()
                 .map(JsonConverter::convertToJson)
                 .collect(Collectors.toList());
