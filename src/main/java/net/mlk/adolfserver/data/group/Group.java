@@ -14,8 +14,6 @@ public class Group implements JsonConvertible {
     @Column(name = "user_id")
     @JsonIgnore
     private int userId;
-    @Column(name = "name")
-    @JsonField(key = "name")
     private String name;
 
     protected Group() {
