@@ -20,7 +20,7 @@ public class LessonHistory implements JsonConvertible {
     @JsonField(key = "number")
     private int number;
     @Column(name = "date")
-    @JsonField(key = "date")
+    @JsonField(key = "date", dateFormat = "yyyy-MM-dd")
     private LocalDate date;
     private String topic;
 
