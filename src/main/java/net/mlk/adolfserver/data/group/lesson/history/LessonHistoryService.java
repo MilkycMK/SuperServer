@@ -4,6 +4,7 @@ import net.mlk.adolfserver.data.group.lesson.Lesson;
 import net.mlk.jmson.Json;
 import net.mlk.jmson.utils.JsonConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class LessonHistoryService {
     }
 
     public static List<Json> findAllJsonByLessonId(int lessonId) {
-        List<LessonHistory> groups = lessonHistoryRepository.findAllByLessonId(lessonId);
+        List<LessonHistory> groups = findAllByLessonId(lessonId);
         return groups.stream()
                 .map(JsonConverter::convertToJson)
                 .collect(Collectors.toList());
